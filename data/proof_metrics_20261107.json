@@ -1,0 +1,178 @@
+{
+  "aggregate_as_published": {
+    "lines": "818 967",
+    "files": "3 621",
+    "projects": "8",
+    "updated": "6 ноября 2026 г.",
+    "tasks": "1 496",
+    "duration": "2418h 25m",
+    "cost_usd": "$2156.81",
+    "llm_calls": "180 622",
+    "avg_duration": "1h 37m",
+    "avg_llm_calls": "121",
+    "avg_cost_usd": "$1.44",
+    "avg_lines": "547"
+  },
+  "sum_of_projects": {
+    "tasks": 1496.0,
+    "llm_calls": 180622.0,
+    "cost_usd": 2156.79,
+    "lines": 818967.0,
+    "files": 3621.0,
+    "hours": 2418.42
+  },
+  "projects": [
+    {
+      "name": "CRM·OS",
+      "status": "Тестируется",
+      "tasks": 416.0,
+      "llm_calls": 63215.0,
+      "cost_usd": 399.49,
+      "lines": 162357.0,
+      "files": 433.0,
+      "id": "ai_tsu_crm",
+      "hours": 528.633,
+      "derived": {
+        "usd_per_task": 0.96,
+        "llm_calls_per_task": 152.0,
+        "hours_per_task": 1.27,
+        "lines_per_task": 390.0,
+        "usd_per_1k_lines": 2.461,
+        "usd_per_llm_call": 0.00632
+      }
+    },
+    {
+      "name": "Cayman ERP",
+      "status": "В разработке",
+      "tasks": 400.0,
+      "llm_calls": 62722.0,
+      "cost_usd": 954.43,
+      "lines": 337876.0,
+      "files": 1427.0,
+      "id": "cayman_erp",
+      "hours": 820.067,
+      "derived": {
+        "usd_per_task": 2.386,
+        "llm_calls_per_task": 156.8,
+        "hours_per_task": 2.05,
+        "lines_per_task": 845.0,
+        "usd_per_1k_lines": 2.825,
+        "usd_per_llm_call": 0.01522
+      }
+    },
+    {
+      "name": "TAO·LLMHUB",
+      "status": "В разработке",
+      "tasks": 85.0,
+      "llm_calls": 6628.0,
+      "cost_usd": 16.98,
+      "lines": 54973.0,
+      "files": 476.0,
+      "id": "tao_llmhub",
+      "hours": 276.1,
+      "derived": {
+        "usd_per_task": 0.2,
+        "llm_calls_per_task": 78.0,
+        "hours_per_task": 3.25,
+        "lines_per_task": 647.0,
+        "usd_per_1k_lines": 0.309,
+        "usd_per_llm_call": 0.00256
+      }
+    },
+    {
+      "name": "TAO·CORTEX",
+      "status": "В разработке",
+      "tasks": 49.0,
+      "llm_calls": 5855.0,
+      "cost_usd": 97.51,
+      "lines": 45310.0,
+      "files": 278.0,
+      "id": "tao_cortex",
+      "hours": 214.433,
+      "derived": {
+        "usd_per_task": 1.99,
+        "llm_calls_per_task": 119.5,
+        "hours_per_task": 4.38,
+        "lines_per_task": 925.0,
+        "usd_per_1k_lines": 2.152,
+        "usd_per_llm_call": 0.01665
+      }
+    },
+    {
+      "name": "milenazhadobina.ru",
+      "status": "В разработке",
+      "tasks": 161.0,
+      "llm_calls": 10808.0,
+      "cost_usd": 123.23,
+      "lines": 57905.0,
+      "files": 345.0,
+      "id": "milenazhadobina",
+      "hours": 80.333,
+      "derived": {
+        "usd_per_task": 0.765,
+        "llm_calls_per_task": 67.1,
+        "hours_per_task": 0.5,
+        "lines_per_task": 360.0,
+        "usd_per_1k_lines": 2.128,
+        "usd_per_llm_call": 0.0114
+      }
+    },
+    {
+      "name": "News Analytics",
+      "status": "В разработке",
+      "tasks": 238.0,
+      "llm_calls": 12738.0,
+      "cost_usd": 231.96,
+      "lines": 54958.0,
+      "files": 296.0,
+      "id": "news_analytics",
+      "hours": 192.117,
+      "derived": {
+        "usd_per_task": 0.975,
+        "llm_calls_per_task": 53.5,
+        "hours_per_task": 0.81,
+        "lines_per_task": 231.0,
+        "usd_per_1k_lines": 4.221,
+        "usd_per_llm_call": 0.01821
+      }
+    },
+    {
+      "name": "Telegram Max VK Publish MCP",
+      "status": "В разработке",
+      "tasks": 41.0,
+      "llm_calls": 5271.0,
+      "cost_usd": 65.69,
+      "lines": 48808.0,
+      "files": 133.0,
+      "id": "telegram_max_vk_publish_mcp",
+      "hours": 61.217,
+      "derived": {
+        "usd_per_task": 1.602,
+        "llm_calls_per_task": 128.6,
+        "hours_per_task": 1.49,
+        "lines_per_task": 1190.0,
+        "usd_per_1k_lines": 1.346,
+        "usd_per_llm_call": 0.01246
+      }
+    },
+    {
+      "name": "Visual Scene Language",
+      "status": "В разработке",
+      "tasks": 106.0,
+      "llm_calls": 13385.0,
+      "cost_usd": 267.5,
+      "lines": 56780.0,
+      "files": 233.0,
+      "id": "visual_scene_language",
+      "hours": 245.517,
+      "derived": {
+        "usd_per_task": 2.524,
+        "llm_calls_per_task": 126.3,
+        "hours_per_task": 2.32,
+        "lines_per_task": 536.0,
+        "usd_per_1k_lines": 4.711,
+        "usd_per_llm_call": 0.01999
+      }
+    }
+  ]
+}
