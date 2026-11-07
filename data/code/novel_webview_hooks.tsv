@@ -1,0 +1,59 @@
+novel_bytes	enclosing_function
+148937	(
+81259	decode(e,t)
+31474	toJSON(e)
+16941	function w3n()
+12327	()=>
+11001	function _3n(e)
+6481	function ki(e,t)
+4799	function kfn(e,t)
+4137	function Va(e,t)
+3932	class Cr extends ec
+2871	function ble(
+2604	()=>(it.current=Mn.subscribeToState(xt.create(
+2124	z=>
+1645	function $dn(
+1435	class Mn extends ec
+1329	async()=>
+1278	function Akn()
+1277	function v9t(e,t="act")
+1207	()=>h.jsxs("div",
+1155	function BPt(e)
+1053	function bfn(e)
+1007	class Hkn extends E.Component
+928	$e=>
+920	e=>
+914	(z,j)=>h.jsxs("div",
+907	encode(e,t=new mt)
+875	function kkn(
+832	function Chn(e)
+656	class $i extends ec
+566	async Q=>
+555	fr=>
+505	getErrorType(t)
+499	class Ja extends ec
+485	function D2n(e)
+473	function Ddn(
+472	(e,t)=>
+436	async(e,t,r)=>
+431	function()
+381	function GT(e,t,r,n,i,o,a,s,l)
+351	function Qcn(e,t)
+338	([o,a])=>
+337	function Nhn(e)
+334	function QO(e)
+317	class gi extends ec
+316	class yc extends ec
+245	b=>
+239	k=>
+195	function Efn(e,t,r,n,i,o)
+111	async(a,s,l)=>
+95	m=>
+94	(m,g)=>h.jsxs("div",
+89	function eee(e)
+69	async Xe=>
+64	d=>
+60	function Ivn()
+52	()=>(r??[]).map(d=>
+33	Xe=>
+33	async l=>

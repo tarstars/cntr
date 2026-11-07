@@ -1,0 +1,88 @@
+{
+  "fork": "/home/tarstars/database/20261107_cntr_proof_site/vsix/unpacked/extension/webview-ui/build/assets/index.js",
+  "upstream": [
+    "/home/tarstars/database/20261107_cntr_proof_site/code/upstream/u3.70.0/extension/webview-ui/build/assets/index.js",
+    "/home/tarstars/database/20261107_cntr_proof_site/code/upstream/u3.78.0/extension/webview-ui/build/assets/index.js",
+    "/home/tarstars/database/20261107_cntr_proof_site/code/upstream/u3.80.0/extension/webview-ui/build/assets/index.js",
+    "/home/tarstars/database/20261107_cntr_proof_site/code/upstream/u3.82.0/extension/webview-ui/build/assets/index.js",
+    "/home/tarstars/database/20261107_cntr_proof_site/code/upstream/u3.84.0/extension/webview-ui/build/assets/index.js",
+    "/home/tarstars/database/20261107_cntr_proof_site/code/upstream/u4.0.12/extension/webview-ui/build/assets/index.js"
+  ],
+  "fork_bytes": 7009597,
+  "units": 80329,
+  "novel_units": 1384,
+  "new_bytes": 889082,
+  "modified_bytes": 28237,
+  "topics": {
+    "command_safety": {
+      "units": 6,
+      "bytes": 14130,
+      "new_bytes": 12587
+    },
+    "jev": {
+      "units": 4,
+      "bytes": 40057,
+      "new_bytes": 40057
+    },
+    "kernel_prompt": {
+      "units": 2,
+      "bytes": 2829,
+      "new_bytes": 2829
+    },
+    "other": {
+      "units": 1061,
+      "bytes": 285468,
+      "new_bytes": 275509
+    },
+    "providers_models": {
+      "units": 71,
+      "bytes": 122536,
+      "new_bytes": 113075
+    },
+    "rest_api": {
+      "units": 19,
+      "bytes": 12209,
+      "new_bytes": 12209
+    },
+    "scheduler": {
+      "units": 57,
+      "bytes": 32031,
+      "new_bytes": 32031
+    },
+    "secrets": {
+      "units": 66,
+      "bytes": 105358,
+      "new_bytes": 104585
+    },
+    "stages_modes": {
+      "units": 16,
+      "bytes": 61822,
+      "new_bytes": 61822
+    },
+    "subscription": {
+      "units": 27,
+      "bytes": 34570,
+      "new_bytes": 32878
+    },
+    "task_context_store": {
+      "units": 17,
+      "bytes": 30772,
+      "new_bytes": 30772
+    },
+    "tools": {
+      "units": 12,
+      "bytes": 11316,
+      "new_bytes": 6507
+    },
+    "update_cycle": {
+      "units": 21,
+      "bytes": 162052,
+      "new_bytes": 162052
+    },
+    "webview_ui_glue": {
+      "units": 5,
+      "bytes": 2169,
+      "new_bytes": 2169
+    }
+  }
+}

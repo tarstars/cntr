@@ -1,0 +1,475 @@
+novel_bytes	enclosing_function
+293220	()=>
+116885	class
+111267	class t
+87621	decode(t,e)
+46637	U4=>
+41801	execute(e,r)
+32836	toJSON(t)
+25890	async function Ddd(t,e,r)
+17529	class extends jWu
+15934	createMessage(e,r,n)
+15715	t=>
+15665	recursivelyMakeClineRequests(e,r=!1)
+11409	function ttc(t,e)
+11368	function ntc(t,e)
+9829	(t,e)=>
+9809	createMessage(e,r)
+9288	function s50()
+8494	getStateToPostToWebview()
+8380	attemptApiRequest(e)
+6242	async function AMi(t,e,r)
+5672	execute(e)
+5591	(t,e,r,n)=>
+4583	function YN0()
+4402	initTask(e,r,n,a,o,i,s)
+4172	h=>
+4139	class t extends pDc.EventEmitter
+4085	ask(e,r,n,a)
+4066	validateAndPrepareFileOperation(e,r,n,a,o)
+3787	presentAssistantMessage()
+3719	async function Ili(t,
+3652	resumeTaskFromHistory()
+3641	encode(t,e=new yt)
+3235	async()=>
+3220	cancelTask(e)
+3042	class extends lYc.EventEmitter
+2979	async function cXg(t)
+2851	async function W8c(t,e)
+2812	buildConversationHistoryForApiRequest(e)
+2720	function uSt(t)
+2357	constructor(e)
+2342	_onrequest(t,e)
+2267	handleTaskModeCompletion(e,r,n,a)
+2205	async function wkc(t,e,r,n,a,o)
+2127	shouldAutoApproveTool(e)
+2112	function C5g(t,e)
+2060	parse()
+2041	(t,e,r)=>
+2004	async function ldd(t)
+1957	function(i,s)
+1955	handleUri(e)
+1920	async function blr(t,e,r,n,a,o,i,s,u,d,f)
+1893	getEnvironmentDetails(e=!1)
+1892	async function CLg(t,e)
+1885	async function XLg(t,e,r,n)
+1872	function HBi(t)
+1845	listen(t,e)
+1796	beforeReplace()
+1764	function(s,u)
+1712	async function JTr(t)
+1673	function B5g(t)
+1590	startTask(e,r,n)
+1576	(p,c)=>
+1538	function M8g(t,e,r,n)
+1476	parseClose(e)
+1469	handleError(e)
+1434	async function _hn(t)
+1338	handleCompleteBlock(e,r)
+1335	async function rze(t,e)
+1236	createMessageMessagesApi(e,r,n)
+1235	function pNr(t)
+1233	connectToServer(e,r,n)
+1209	runPreToolUseIfEnabled(e,r)
+1193	async(t,e,r)=>
+1192	async function wLa(t)
+1181	(o,i,s)=>
+1175	createMessageChatApi(e,r,n)
+1170	(u,d)=>
+1169	handleSuccessfulRestore(e,r,n,a)
+1152	class extends pml
+1138	runPostToolUseHook(e,r,n,a,o)
+1136	async function DGc(t,e)
+1115	r=>
+1090	class extends Error
+1053	s(e,r,n)
+1047	async function Rcd(t)
+1033	class extends Aml
+1031	async function T6u(t,e,r,n,a,o,i,s)
+1030	function fie(t)
+1024	(PCy,wEu)=>
+1023	function I5g(t,e,r)
+1018	code(o)
+1015	s=>
+1003	async f=>
+996	getHtmlContent()
+957	a=>
+942	handleTaskModeReopen(e,r,n,a,o,i,s,u)
+898	async function uDi(t,e,r,n)
+897	async(Ce,Se)=>
+887	initialize(e)
+887	function df(t,e,r)
+882	writePromptMetadataArtifacts(e)
+874	class extends F9t
+858	class extends vml
+844	createMessageResponsesApi(e,r,n)
+842	i=>
+839	(r,n)=>
+811	_wrapHandler(t,e)
+805	function Dsi(t,e)
+805	function fbt(t,e)
+804	function hX0(t)
+802	createCompletionStream(e,r,n)
+794	async function GFg(t,e,r,n,a,o,i,s,u)
+790	async(r,n)=>
+782	(s,u,d)=>
+760	o=>
+756	(a,o)=>
+740	execute(e,r,n)
+726	loadHistoryForViewing()
+721	provideCodeActions(g,A,y)
+712	class t extends C1l
+711	streamCompletionGemini(e,r)
+705	(ep1,f9c)=>
+703	function Sn(t,e,r,n)
+703	function Dn(t,e,r,n)
+693	function fOc(t,e,r)
+691	async function Zdd()
+690	function P8u(t,e,r)
+690	function GQu(t,e,r)
+682	handlePartialBlock(e,r)
+671	captureToolUsage(e,r,n,a,o,i,s,u=!1,d)
+671	getTaskWithId(e)
+660	function yJp(t,e,r)
+657	createAnthropicMessage(e,r)
+655	handleReopen(e,r,n,a,o)
+645	scheduleAssistantPresentation(e,r="normal")
+641	getModel()
+632	exchangeCodeForTokens(e,r,n,a,o)
+628	(n,a)=>
+627	n=>
+622	function MT(t,e=p9,r)
+616	presentMultifileDiffByHashes(e,r,n="Change diff")
+612	function aLg(t)
+604	function Ki(t=
+603	function Bsi(t,e,r)
+603	function zui(t,e,r)
+602	class extends r.default
+597	function y5g(t)
+586	createOpenaiMessage(e,r)
+578	askApprovalAndPushFeedback(e,r,n,a,o,i)
+570	function Yv(ut,dt,er,Wr)
+568	fromError(e,r,n)
+568	async function $Jc(t)
+567	function zdd(t,e,r)
+566	getCurrentReasoning()
+566	async function OFr(t,e)
+552	function CDi(t)
+527	saveCheckpoint(e=!1,r)
+523	_onnotification(t,e)
+515	async function fXg(t)
+514	async function uJc(t)
+509	async function qNc(t,e)
+501	getErrorType(r)
+489	processToolUseDelta(e,r)
+483	function U$u(t)
+483	handleWebviewMessage(e)
+477	async function e$u(t,
+472	function q8g(t,e,r,n)
+467	function lNr(t)
+462	class t extends FAl
+462	function bcp(t)
+461	class extends t
+460	function EL0(t)
+458	function c4n(t,e,r,n,a,o,i,s)
+451	function YFr(t)
+449	async function vL0(t,
+432	getFinalizedToolUse(e)
+424	class extends pEl
+419	saveChanges()
+419	callTool(e,r,n,a)
+413	code(a)
+379	(ZgA,vca)=>
+375	function ksi(t,e)
+375	function dbt(t,e)
+375	function a(i,s,
+374	function n(d,f)
+373	(Rc,Qbo)=>
+371	connect(t)
+369	class t extends bAl
+366	function pFg(t,e)
+365	async K=>
+356	function wSr(t,e)
+354	class lWu extends Error
+344	constructor(e,r,n,a,o)
+342	async function eUt(t,e)
+341	function tsi(t,e)
+341	function Cui(t,e)
+339	function v8g(t,e,r,n)
+336	function(e,r)
+334	async function j2t(t,e)
+334	say(e,r,n,a,o)
+331	completeTask(e,r)
+330	async function oRt(t,e,r,n)
+327	normalizeUnit(e)
+325	function FDi(t,e)
+320	(d,f)=>
+319	getWorkspaceApiConfiguration()
+318	class t extends I1l
+318	g=>
+317	addCustomSecretKey(e)
+316	class t extends GEl
+316	function yE(t,e,r=
+316	function f0(t,e,r=
+315	async function p5c(t,e)
+313	setWorkspaceApiConfiguration(e)
+311	c=>
+310	setGlobalState(e,r)
+307	getGlobalSettingsKey(e)
+301	createDiffView(e,r,n)
+298	class extends yml
+298	open(e,r)
+297	class extends EEl
+295	async function G6c(t,e)
+294	class extends bEl
+291	class extends gEl
+291	yieldUsage(e,r)
+291	function Ec0(t,e,r)
+285	class extends Rra
+284	class SWu extends Error
+284	async function XVu(t,e,r=fetch)
+282	class extends TEl
+282	class extends E1l
+273	(f,p)=>
+270	function uOc(t,e,r)
+270	addReviewComment(e)
+269	function cPf(t)
+269	function CP0(t,e)
+269	function j40(t,e)
+268	updateToolCall(e,r,n,a,o)
+267	async function SL0(t,
+266	buildRequestBody(e,r,n,a,o)
+264	function yPf(t)
+263	async function K$u(t,e,r,n)
+263	executeCommandTool(e,r,n)
+262	function(A)
+262	async function C5r(t,e,r,n)
+258	watchSingleSettingsFile(e,r)
+258	async function rme(t,e,r)
+258	startStreamingComment(e,r,n,a,o,i=!1)
+257	AC=>
+256	getOrCreateTerminal(e)
+256	function s5g(t)
+255	constructor(e,r)
+249	class extends Tml
+246	parseOpen(e)
+246	function no(t,e,r)
+244	async function eMi(t,e)
+242	class extends T7r
+241	shouldAutoApproveToolWithPath(e,r)
+238	createTerminal(e,r,n)
+236	class extends OEl
+235	setApiConfiguration(e)
+234	class extends DEl
+233	loadTaskSettings(e)
+231	get(e,r)
+230	getCurrentProviderInfo()
+229	captureTokenUsage(e,r,n,a,o,i)
+227	toggleActModeForYoloMode()
+222	async function _Ce(t,e)
+219	class extends fEl
+218	class extends GPt
+216	_requestWithSchemaViaCodec(t,e,r,n)
+215	recreatePresentationScheduler()
+214	Yjt=>
+213	async function Nec(t,e,r,n,a)
+211	_onresponse(t)
+211	async function QHe(t,e)
+209	function R4h(t,e)
+208	(xe,Te,Me)=>
+207	removeCustomSecretKey(e)
+206	function ILu(t,e,r,n,a,o,i)
+206	function kqu(t,e,r,n,a,o,i)
+201	function Ywe(t)
+200	async(e,r,n)=>
+196	async(o,i)=>
+194	function bP0(t,e)
+194	function z40(t,e)
+193	function R3(t,e)
+193	function k3(t,e)
+193	function iLg(t)
+188	getAvailableSecretKeys()
+188	CIe=>
+187	_resetTimeout(t)
+187	async A=>
+187	function p(C,x)
+187	buildWithBreakdown()
+186	async function B8g(t,e,r,n,a,o=0)
+185	async function OVu(t)
+184	class t extends wgl
+179	shouldRunTaskCancelHook()
+178	exposeFunction(e,r)
+178	function ONr(t,e,r)
+175	class t extends QA
+174	async(g,A)=>
+174	async xe=>
+173	async function $9c(t,e,r,n)
+170	getUnretrievedOutput()
+169	class t extends jgl
+167	function YPc(t)
+167	endStreamingComment()
+165	(t,e,r,n,a)=>
+165	internalProcessLine(e,r,n)
+164	class t extends GPt
+163	async function RGc(t,e)
+162	get(B,O,Q)
+161	class extends Ugl
+161	handleHicapCallback(e)
+155	class extends Egl
+155	append(t)
+154	function U_r(t,e)
+154	function Ybr(t,e)
+154	function zNr(t,e,r)
+153	function Skc(t)
+151	class extends KEl
+148	class extends Dgl
+148	class extends TAl
+146	async function i9g()
+145	(s,u)=>
+145	saveClineMessagesAndUpdateHistory()
+145	shouldCompactBeforeNextRequest(e,r,n)
+144	class extends iyl
+144	runCommand(e,r)
+143	create(e,r,n,a,o=!1)
+142	function Zli(t,e)
+141	async function WLa(t)
+141	function add(t,e)
+141	handleOpenRouterCallback(e)
+141	handleRequestyCallback(e)
+137	dispose()
+137	async function j7g(t)
+132	(e,r,n)=>
+132	(d,f=
+131	async function G7g(t)
+129	handleError(e,r,n)
+126	watchMcpSettingsFile()
+125	(t,...e)=>
+123	function R6(t,e)
+123	tryFixReplaceBlock(e)
+123	tryFixSearchReplaceBlock(e)
+122	function vP0(t,e)
+122	function $40(t,e)
+121	async function VLa(t)
+120	async function ER(t)
+120	function l8u(t)
+120	function EQu(t)
+116	setSecret(e,r)
+115	class extends mEl
+113	notifyWebviewOfServerChanges()
+111	updateTelemetrySetting(e)
+110	class extends xi
+110	loadPageContent(e)
+109	function nIr(t,e)
+108	listSnapshots(e)
+108	class extends Wmg.EventEmitter
+108	(e,r,n,a)=>
+108	async function o8c(t,e)
+107	function G5r(t)
+105	async function f8c(t,e)
+103	loadContext(e,r=!1,n=!1)
+101	class extends g1l
+97	async t=>
+96	_startOrAuth()
+95	function ZTr(t)
+93	async function yL0(t,e,r,n)
+91	function v5g(t)
+87	readIncludedFile(e)
+87	function fPf(t)
+85	([r,n])=>
+85	function lXg(t)
+84	function i(h,g)
+84	generateKey(e,r,n,a)
+84	function Yhi(t)
+83	function m(J,X)
+82	function lGl(t,e)
+81	async function IUc(t,e,r,n)
+80	constructor()
+79	(A,y,I)=>
+79	function lOc(t,e)
+78	function c(C,x)
+77	async function DUc(t,e,r,n)
+76	class extends hEl
+76	([n,a])=>
+76	async function RUc(t,e,r,n)
+75	class extends Rml
+75	class extends kml
+75	class extends Dml
+75	class extends y1l
+74	(uhA,Dna)=>
+74	(e,r)=>
+74	async function T8c(t,e,r,n)
+73	async function EUc(t,e,r,n)
+72	class extends o
+71	(NpA,Nra)=>
+71	e=>
+70	async function n8c(t,e,r,n)
+69	function Roi(t,e)
+69	function Xsi(t,e)
+68	function k0n(t)
+67	class extends hAl
+67	class extends vyl
+67	function R5g(t)
+67	async function l8c(t,e,r,n)
+66	async function Eju(t,e)
+66	async function S8c(t,e,r,n)
+65	function cL0(t)
+64	async function h8c(t,e,r,n)
+63	function $ci(t)
+63	async function _8c(t,e,r,n)
+63	async function w8c(t,e,r,n)
+62	onParserClose(e,r)
+61	async function Fat(t)
+61	deleteConnection(e,r)
+60	async(n,a,o,i)=>
+60	async function mju(t,e)
+57	function EP0(t,e)
+57	function V40(t,e)
+55	class extends pEe
+55	toResponseObject()
+54	async function M6e(t)
+53	function VV(t,e)
+52	async function ZLg(t,e,r,n)
+50	class extends A1l
+50	class extends m1l
+50	function uRn(t,e)
+50	function QFg(t,e,r)
+50	async function Pze(t,e,r)
+50	function b7r(t)
+48	function MP0(t,e,r)
+48	(n,a,o,i)=>
+48	function a60(t,e,r)
+47	(_hA,Jna)=>
+46	class extends eAl
+46	class extends w
+46	Lne=>
+45	persistGlobalStateBatch(e)
+45	function _P0(t,e)
+45	function K40(t,e)
+44	function(n,a)
+38	class extends Kmg.EventEmitter
+38	async function MUc(t)
+37	function nUt(t)
+37	code(f)
+37	async function iju(t,e)
+34	async function gYc(t,e,r)
+32	class extends yEl
+32	class extends _El
+31	class extends mgl
+31	function KLe(t,e,r,n,a,o,i)
+31	function Nci(t,e,r="")
+31	getUnretrievedOutput(e)
+30	function BP0(t,e)
+30	attach(t)
+30	function i60(t,e)
+30	fromISO(e,r=
+30	fromRFC2822(e,r=
+28	action(a,
+27	function W0(t,e,r,n,a,o,i)
+27	function zLe(t,e,r,n,a,o,i)
+27	function jMc(t)
+26	async function ol(t)
+26	function BFu(t,e,r)
+26	function qUu(t,e,r)
+26	fromHTTP(e,r=
+25	fromSQL(e,r=
+22	()
