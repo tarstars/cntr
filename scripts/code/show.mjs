@@ -1,5 +1,7 @@
 // Print the prettified innermost function (or statement) of a bundle that contains a byte offset.
 // Usage: node show.mjs BUNDLE OFFSET [--stmt] [--max CHARS] [--outer N]
+//   OFFSET is a JS string index (UTF-16 code units), as in index.tsv - not a byte offset from `grep -b`,
+//   which drifts after non-ASCII text.
 //   --stmt     innermost statement instead of innermost function
 //   --outer N  go N function levels further out
 //   --max      truncate output (default 40000 chars)

@@ -190,6 +190,8 @@ thead th {
 .dot.off { fill: none; stroke: var(--rule); stroke-width: 1.3; }
 .dot.ring { fill: var(--box); stroke: var(--gate); stroke-width: 1.3; }
 .dot.ask { fill: var(--gate); }
+.defects { margin: 0; padding-left: 1.2em; max-width: 92ch; display: grid; gap: 8px; }
+.defects li::marker { color: var(--cost); }
 
 </style>
 <header class="head">
@@ -197,7 +199,8 @@ thead th {
   <h1>TAO·CODER Teardown</h1>
   <p class="lede">How the coding agent behind <b>цнтр.рф/proof</b> turns a product brief into code, and how its task
   logs become the numbers on that page. Rebuilt from 75 site pages, the 24 project documents embedded in /proof and
-  the published VS Code extension (<code>tao-coder</code> 3.1.2, a fork of Cline).</p>
+  the published VS Code extension (<code>tao-coder</code> 3.1.2), whose code was diffed against 12 releases of
+  Cline to separate TAO's own 2.2 MB from the Cline 3.79 it was forked from.</p>
 </header>
 
 <section class="sheet-sec" aria-label="Pipeline sheet">
@@ -310,11 +313,14 @@ thead th {
 <text class="tb n" x="238.0" y="270.0">the site's guide lists a different order: … → ARCHITECTURE → DESIGN_SYSTEM → README_AI → ROADMAP → CHECK_ALL</text>
 <rect class="box  ev-code" x="906" y="84" width="290" height="208" rx="3"/>
 <text class="tt" x="918.0" y="104.0">PROJECT REPO</text>
-<text class="tb" x="918.0" y="149.0"><tspan class="m">CHECK_ALL.md</tspan> + <tspan class="m">check_all.sh</tspan></text>
-<text class="tb" x="918.0" y="165.0"><tspan class="m">README_AI.md</tspan> · the project bible</text>
-<text class="tb" x="918.0" y="181.0"><tspan class="m">.taocoder/</tspan> tasks · check_runs · modes</text>
-<text class="tb" x="918.0" y="197.0"><tspan class="m">src/</tspan> · <tspan class="m">tests/</tspan> · <tspan class="m">e2e/</tspan> · <tspan class="m">deploy.sh</tspan></text>
-<text class="tb n" x="918.0" y="213.0">decision ids seen: ADR-NNN, DEC-NNN, D-NN</text>
+<text class="tb" x="918.0" y="125.0"></text>
+<text class="tb" x="918.0" y="141.0"></text>
+<text class="tb" x="918.0" y="157.0"></text>
+<text class="tb" x="918.0" y="173.0"><tspan class="m">CHECK_ALL.md</tspan> + <tspan class="m">check_all.sh</tspan></text>
+<text class="tb" x="918.0" y="189.0"><tspan class="m">README_AI.md</tspan> · the project bible</text>
+<text class="tb" x="918.0" y="205.0"><tspan class="m">.taocoder/</tspan> tasks · check_runs · modes</text>
+<text class="tb" x="918.0" y="221.0"><tspan class="m">src/</tspan> · <tspan class="m">tests/</tspan> · <tspan class="m">e2e/</tspan> · <tspan class="m">deploy.sh</tspan></text>
+<text class="tb n" x="918.0" y="237.0">decision ids seen: ADR-NNN, DEC-NNN, D-NN</text>
 <text class="tb" x="918.0" y="125.0"><tspan class="m">PRODUCT_CONCEPT.md</tspan></text>
 <text class="tb" x="1050.0" y="125.0"><tspan class="m">TARGET_AUDIENCE.md</tspan></text>
 <text class="tb" x="918.0" y="141.0"><tspan class="m">DESIGN_SYSTEM.md</tspan></text>
@@ -362,7 +368,7 @@ thead th {
 <text class="al" x="1465" y="237" text-anchor="middle">E2E</text>
 <text class="bn" x="50" y="350">2</text>
 <text class="bt" x="76" y="350">ONE TASK</text>
-<text class="bs" x="180" y="350">inner loop inside the VS Code extension (a Cline fork, tao-coder 3.1.2) · minutes to hours</text>
+<text class="bs" x="180" y="350">inner loop inside the VS Code extension (Cline 3.79 + 2.2 MB of TAO code, v3.1.2) · minutes to hours</text>
 <rect class="box  ev-code" x="50" y="372" width="190" height="514" rx="3"/>
 <text class="tt" x="62.0" y="392.0">A TASK STARTS FROM</text>
 <text class="tt sub" x="62.0" y="413.0">CHAT</text>
@@ -371,10 +377,10 @@ thead th {
 <text class="tt sub" x="62.0" y="466.2">SCHEDULE</text>
 <text class="tb" x="62.0" y="481.4"><tspan class="m">.taocoder/schedules.json</tspan></text>
 <text class="tb" x="62.0" y="496.6">checked every 60 s while</text>
-<text class="tb" x="62.0" y="511.8">VS Code is open; missed runs:</text>
-<text class="tb" x="62.0" y="527.0">run now / skip / reschedule</text>
-<text class="tb" x="62.0" y="542.2">autonomous: no questions,</text>
-<text class="tb" x="62.0" y="557.4"><tspan class="m">rm</tspan> and unknown cmds blocked</text>
+<text class="tb" x="62.0" y="511.8">VS Code is open; cron in UTC</text>
+<text class="tb" x="62.0" y="527.0">autonomous: questions are</text>
+<text class="tb" x="62.0" y="542.2">auto-answered; <tspan class="m">rm</tspan> and</text>
+<text class="tb" x="62.0" y="557.4">unknown commands blocked</text>
 <text class="tt sub" x="62.0" y="580.2">HANDOFF</text>
 <text class="tb" x="62.0" y="595.4"><tspan class="m">taocoder_create_handoff</tspan></text>
 <text class="tb" x="62.0" y="610.6">→ <tspan class="m">handoff_bundle.json</tspan></text>
@@ -395,7 +401,7 @@ thead th {
 <text class="tb" x="62.0" y="993.4"><tspan class="m">mode.json</tspan> + stage files:</text>
 <text class="tb" x="62.0" y="1008.6">prompt, allowed / forbidden</text>
 <text class="tb" x="62.0" y="1023.8">tools, exit criteria, hooks</text>
-<text class="tb n" x="62.0" y="1039.0">Mode Builder ships as one</text>
+<text class="tb n" x="62.0" y="1039.0">1 plan launch per new task</text>
 <rect class="box  ev-code" x="288" y="372" width="404" height="344" rx="3"/>
 <text class="tt" x="300.0" y="392.0">PROMPT BUILDER · REBUILT FOR EVERY LLM REQUEST</text>
 <rect class="box sub ev-code" x="300" y="402" width="380" height="70" rx="3"/>
@@ -404,17 +410,17 @@ thead th {
 <text class="tb" x="312.0" y="458.0">MCP servers, rules (<tspan class="m">.taocoderules</tspan>), skills</text>
 <rect class="box mem ev-code" x="300" y="480" width="380" height="168" rx="3"/>
 <text class="tt" x="312.0" y="500.0">MESSAGES[0] · TASK CONTEXT KERNEL</text>
-<text class="tb" x="312.0" y="521.0">header: “Task Context Kernel — YOUR PERSISTED MEMORY”</text>
-<text class="tb" x="312.0" y="535.6">fixed top: mode, stage, spec, acceptance criteria,</text>
-<text class="tb" x="312.0" y="550.2">constraints, plan, exit criteria</text>
-<text class="tb" x="312.0" y="564.8"><tspan class="m">README_AI.md</tspan> (once) · results of the last 5 tasks</text>
-<text class="tb" x="312.0" y="579.4">rule: “Every response MUST be a tool call”</text>
-<text class="tb" x="312.0" y="594.0">feed, newest first: code snippets re-read from disk</text>
-<text class="tb" x="312.0" y="608.6">(≤ 25 × 150 lines), notes, changes</text>
-<text class="tb n" x="312.0" y="623.2">budget: 25k tokens target, 50k hard</text>
+<text class="tb" x="312.0" y="521.0">header + feed, newest first: refs, notes, changes</text>
+<text class="tb" x="312.0" y="535.6">(the feed is outside the budget, never trimmed)</text>
+<text class="tb" x="312.0" y="550.2">stage · spec · acceptance criteria · constraints</text>
+<text class="tb" x="312.0" y="564.8"><tspan class="m">README_AI.md</tspan> + last 5 done tasks, until 1st cycle</text>
+<text class="tb" x="312.0" y="579.4">ALGORITHM: “Every response MUST be a tool call”</text>
+<text class="tb" x="312.0" y="594.0">stage prompt · exit criteria (cut first at 200k chars)</text>
+<text class="tb" x="312.0" y="608.6">snippets: 25 oldest refs × 150 lines; cached until</text>
+<text class="tb n" x="312.0" y="623.2">spec, stage or an update-cycle changes</text>
 <rect class="box sub ev-code" x="300" y="656" width="380" height="52" rx="3"/>
-<text class="tt" x="312.0" y="676.0">MESSAGES[1..N] · RECENT WINDOW</text>
-<text class="tb" x="312.0" y="697.0">last 10 raw turns + up to 8 more, capped at 50k tokens</text>
+<text class="tt" x="312.0" y="676.0">MESSAGES[1..N] · HISTORY, THEN A TAIL</text>
+<text class="tb" x="312.0" y="697.0">history ≤ 50k tokens · tail: plan + KERNEL UPDATES</text>
 <rect class="box cost ev-code" x="288" y="752" width="404" height="134" rx="3"/>
 <text class="tt" x="300.0" y="772.0">LLM PROVIDER · ONE PAID CALL PER TURN</text>
 <g class="badge"><circle cx="674.0" cy="768.0" r="7.5"/><text x="674.0" y="771.6" text-anchor="middle">$</text></g>
@@ -422,6 +428,7 @@ thead th {
 <text class="tb" x="300.0" y="808.5">Gemini, Qwen, OpenRouter, Bedrock, Vertex, Azure, Ollama</text>
 <text class="tb" x="300.0" y="824.0">reply: exactly one tool call, in Cline's tool format</text>
 <text class="tb c" x="300.0" y="839.5">/proof average per task: 121 calls · $1.44 · 1 h 37 m</text>
+<text class="tb n" x="300.0" y="855.0">a never-cleared 300 s chunk timer cuts replies over 5 min</text>
 <rect class="box mem ev-code" x="740" y="372" width="392" height="248" rx="3"/>
 <text class="tt" x="752.0" y="392.0">TASK CONTEXT · <tspan class="m">.taocoder/tasks/&lt;task_id&gt;/</tspan></text>
 <text class="tb" x="752.0" y="413.0"><tspan class="m">task_context.json</tspan>, the agent's only long-term memory:</text>
@@ -431,24 +438,27 @@ thead th {
 <text class="tb" x="752.0" y="475.4">stale refs are re-found by hash, else flagged</text>
 <text class="tb" x="752.0" y="491.0">notes · hypothesis / decision / negative_knowledge / info</text>
 <text class="tb" x="752.0" y="506.6">changes (diff refs) · execution_log · feedback · user notes</text>
-<text class="tb c" x="752.0" y="522.2">metrics · api_call_count, total_cost, duration_ms,</text>
-<text class="tb c" x="752.0" y="537.8">tokens, tool_call_count (summed later on /proof)</text>
+<text class="tb c" x="752.0" y="522.2">metrics · calls, cost, tokens, duration = time in LLM calls</text>
+<text class="tb c" x="752.0" y="537.8">a handoff copies the parent's whole cost into the child</text>
 <text class="tb" x="752.0" y="553.4">next to it: <tspan class="m">audit.jsonl</tspan>, <tspan class="m">snapshots/&lt;id&gt;/</tspan>, <tspan class="m">artifacts/diffs/</tspan></text>
 <rect class="box  ev-code" x="740" y="648" width="392" height="238" rx="3"/>
-<text class="tt" x="752.0" y="668.0">THREE WAYS INTO TASK CONTEXT</text>
-<rect class="box mem ev-code" x="752" y="672" width="368" height="88" rx="3"/>
-<text class="tt" x="764.0" y="692.0">UPDATE-CYCLE · AUTOMATIC</text>
-<g class="badge"><circle cx="1102.0" cy="688.0" r="7.5"/><text x="1102.0" y="691.6" text-anchor="middle">$</text></g>
-<text class="tb" x="764.0" y="713.0">every 5 new user turns, or kernel deltas over 10k tokens</text>
-<text class="tb" x="764.0" y="728.0">extractor reads turns “about to be PERMANENTLY DELETED”</text>
-<text class="tb" x="764.0" y="743.0">→ JSON: code refs, notes, plan statuses; snapshot, merge</text>
-<rect class="box mem ev-code" x="752" y="766" width="368" height="64" rx="3"/>
-<text class="tt" x="764.0" y="786.0">TAOCODER_* TOOLS · DELIBERATE</text>
-<text class="tb" x="764.0" y="807.0"><tspan class="m">update_task_spec</tspan> · <tspan class="m">add_relevant_code_ref</tspan> · <tspan class="m">add_note</tspan></text>
-<text class="tb" x="764.0" y="821.0"><tspan class="m">update_implementation_plan</tspan> · <tspan class="m">update_exit_criteria</tspan> …</text>
-<rect class="box mem ev-code" x="752" y="836" width="368" height="44" rx="3"/>
-<text class="tt" x="764.0" y="856.0">COCKPIT PANEL · THE OWNER</text>
-<text class="tb" x="764.0" y="872.0">edits spec / plan / criteria, private notes; snapshot and roll back</text>
+<text class="tt" x="752.0" y="668.0">FOUR WAYS INTO TASK CONTEXT</text>
+<rect class="box mem ev-code" x="752" y="674" width="368" height="84" rx="3"/>
+<text class="tt" x="764.0" y="694.0">UPDATE-CYCLE · AUTOMATIC</text>
+<g class="badge"><circle cx="1102.0" cy="690.0" r="7.5"/><text x="1102.0" y="693.6" text-anchor="middle">$</text></g>
+<text class="tb" x="764.0" y="715.0">every 5 tool results, run before the agent's next call</text>
+<text class="tb" x="764.0" y="729.0">extractor reads tool calls and results, not reasoning</text>
+<text class="tb" x="764.0" y="743.0">→ notes, code refs, plan statuses; history cut to 20 msgs</text>
+<rect class="box mem ev-code" x="752" y="762" width="368" height="38" rx="3"/>
+<text class="tt" x="764.0" y="782.0">TAOCODER_* TOOLS · DELIBERATE</text>
+<text class="tb" x="764.0" y="795.0"><tspan class="m">update_task_spec</tspan> · <tspan class="m">add_relevant_code_ref</tspan> · <tspan class="m">add_note</tspan> …</text>
+<rect class="box mem ev-code" x="752" y="804" width="368" height="38" rx="3"/>
+<text class="tt" x="764.0" y="824.0">REPAIR PLANNER · AUTOMATIC</text>
+<g class="badge"><circle cx="1102.0" cy="820.0" r="7.5"/><text x="1102.0" y="823.6" text-anchor="middle">$</text></g>
+<text class="tb" x="764.0" y="837.0">empty or broken plan / spec / AC → an LLM rewrites them</text>
+<rect class="box mem ev-code" x="752" y="846" width="368" height="38" rx="3"/>
+<text class="tt" x="764.0" y="866.0">COCKPIT PANEL · THE OWNER</text>
+<text class="tb" x="764.0" y="879.0">edits spec / plan / AC, ticks exit criteria, notes; rollback</text>
 <rect class="box gate ev-code" x="1180" y="372" width="546" height="144" rx="3"/>
 <text class="tt" x="1192.0" y="392.0">STAGE MACHINE · DEVELOPER MODE (DEFAULT PIPELINE)</text>
 <rect class="pill stage ev-code" x="1192.0" y="404" width="99.9" height="26" rx="13.0"/>
@@ -473,25 +483,24 @@ thead th {
 <text class="tb" x="1192.0" y="500.0">each → is a <tspan class="m">taocoder_set_stage(reason, evidence_refs)</tspan> call that must pass the gate</text>
 <rect class="box gate ev-code" x="1180" y="532" width="250" height="226" rx="3"/>
 <text class="tt" x="1192.0" y="552.0">STAGE GATE · CHECKS IN ORDER</text>
-<text class="tb" x="1192.0" y="573.0">1  target is in the pipeline, or rework</text>
-<text class="tb" x="1192.0" y="587.8">2  reason + evidence ids, each of</text>
-<text class="tb" x="1192.0" y="602.6">    which must exist in Task Context</text>
-<text class="tb" x="1192.0" y="617.4">3  every exit criterion here is true</text>
-<text class="tb" x="1192.0" y="632.2">4  leave audit: each AC has a verdict;</text>
-<text class="tb" x="1192.0" y="647.0">    enter report: every AC = pass</text>
-<text class="tb" x="1192.0" y="661.8">5  custom modes only: required</text>
-<text class="tb" x="1192.0" y="676.6">    secrets, stage_exit hooks (JEV)</text>
-<text class="tb n" x="1192.0" y="691.4">then stage_history += 1 and the next</text>
-<text class="tb n" x="1192.0" y="706.2">stage's criteria are reset to false</text>
-<text class="tb n" x="1192.0" y="721.0">audit → report needs the owner</text>
+<text class="tb" x="1192.0" y="573.0">1  target: any stage in the pipeline</text>
+<text class="tb" x="1192.0" y="587.8">    or rework: stages can be skipped</text>
+<text class="tb" x="1192.0" y="602.6">2  reason + evidence; ids are checked</text>
+<text class="tb" x="1192.0" y="617.4">    only when given as an id object</text>
+<text class="tb" x="1192.0" y="632.2">3  no exit criterion here is false</text>
+<text class="tb" x="1192.0" y="647.0">4  leave audit: each AC has a verdict;</text>
+<text class="tb" x="1192.0" y="661.8">    enter report: every AC = pass</text>
+<text class="tb" x="1192.0" y="676.6">5  custom modes: secrets, exit hooks</text>
+<text class="tb n" x="1192.0" y="691.4">then the next stage's criteria reset</text>
+<text class="tb n" x="1192.0" y="706.2">the owner is never asked to approve</text>
 <rect class="box gate ev-code" x="1446" y="532" width="280" height="226" rx="3"/>
 <text class="tt" x="1458.0" y="552.0">EXIT CRITERIA · DEVELOPMENT</text>
 <text class="tb" x="1458.0" y="573.0"><tspan class="m">implementation_done</tspan> · <tspan class="m">tests_added</tspan></text>
 <text class="tb" x="1458.0" y="587.6"><tspan class="m">check_all_passed</tspan> · <tspan class="m">code_modular</tspan></text>
 <text class="tb" x="1458.0" y="602.2"><tspan class="m">code_production_quality</tspan></text>
 <text class="tb" x="1458.0" y="616.8"><tspan class="m">no_hacks_or_workarounds</tspan></text>
-<text class="tb" x="1458.0" y="631.4">set true by the agent with</text>
-<text class="tb" x="1458.0" y="646.0"><tspan class="m">taocoder_update_exit_criteria</tspan></text>
+<text class="tb" x="1458.0" y="631.4">set by the agent (<tspan class="m">update_exit_criteria</tspan>)</text>
+<text class="tb" x="1458.0" y="646.0">or ticked by the owner in the Cockpit</text>
 <text class="tt sub" x="1458.0" y="667.9">CHECK_ALL.SH</text>
 <text class="tb" x="1458.0" y="682.5"><tspan class="m">bash check_all.sh</tspan> runs typecheck, lint,</text>
 <text class="tb" x="1458.0" y="697.1">tests, doc coverage, integration</text>
@@ -500,12 +509,12 @@ thead th {
 <text class="tb n" x="1458.0" y="740.9">reports <tspan class="m">check_all_passed</tspan> itself</text>
 <rect class="box gate ev-code" x="1180" y="772" width="546" height="114" rx="3"/>
 <text class="tt" x="1192.0" y="792.0">TOOL ACCESS BY STAGE</text>
-<circle class="dot on" cx="1490.0" cy="788.0" r="4.6"/>
-<text class="tb n" x="1499.0" y="792.0">allowed</text>
-<circle class="dot ring" cx="1556.0" cy="788.0" r="4.6"/><path class="dot ask" d="M1556.0,783.4 A4.6,4.6 0 0 1 1556.0,792.6 Z"/>
-<text class="tb n" x="1565.0" y="792.0">asks the owner</text>
-<circle class="dot off" cx="1650.0" cy="788.0" r="4.6"/>
-<text class="tb n" x="1659.0" y="792.0">blocked</text>
+<circle class="dot on" cx="1430.0" cy="788.0" r="4.6"/>
+<text class="tb n" x="1439.0" y="792.0">allowed</text>
+<circle class="dot ring" cx="1496.0" cy="788.0" r="4.6"/><path class="dot ask" d="M1496.0,783.4 A4.6,4.6 0 0 1 1496.0,792.6 Z"/>
+<text class="tb n" x="1505.0" y="792.0">flagged “needs ok”, no effect</text>
+<circle class="dot off" cx="1662.0" cy="788.0" r="4.6"/>
+<text class="tb n" x="1671.0" y="792.0">blocked</text>
 <text class="tb mh" x="1382.2" y="812.0" text-anchor="middle">clarify</text>
 <text class="tb mh" x="1442.5" y="812.0" text-anchor="middle">collect</text>
 <text class="tb mh" x="1502.8" y="812.0" text-anchor="middle">develop</text>
@@ -557,16 +566,16 @@ thead th {
 <rect class="box gate ev-code" x="782" y="952" width="600" height="112" rx="3"/>
 <text class="tt" x="794.0" y="972.0"><tspan class="m">execute_command</tspan> → COMMAND SAFETY</text>
 <text class="tb" x="794.0" y="993.0"><tspan class="m">classifyCommand</tspan>: user blacklist → built-in blacklist → user require_approval → user whitelist</text>
-<text class="tb" x="794.0" y="1007.6">→ built-in whitelist → else unknown · blacklist: <tspan class="m">rm</tspan>, <tspan class="m">sudo</tspan>, <tspan class="m">git reset --hard</tspan>, <tspan class="m">curl … | sh</tspan></text>
-<text class="tb" x="794.0" y="1022.2">dangerous, requires_approval, unknown → the owner approves · safe → runs if auto-approve allows</text>
-<text class="tb" x="794.0" y="1036.8">JEV (off by default): unknown + noul(“is it SAFE?”) ≥ 0.7 → safe; on an error it fails open</text>
+<text class="tb" x="794.0" y="1007.6">→ built-in whitelist, matched on the first segment only (<tspan class="m">bash</tspan>, <tspan class="m">python</tspan>, <tspan class="m">npx</tspan> are “safe”)</text>
+<text class="tb" x="794.0" y="1022.2">non-safe → the owner approves, but auto-approve-all runs blacklisted commands too</text>
+<text class="tb" x="794.0" y="1036.8">(only <tspan class="m">rm</tspan> and <tspan class="m">git checkout --</tspan> always ask) · JEV is consulted, but its verdict is ignored</text>
 <text class="tb" x="794.0" y="1051.4"><tspan class="m">{{SECRET:KEY}}</tspan> is substituted just before the command runs</text>
 <rect class="box sub ev-code" x="1398" y="952" width="316" height="112" rx="3"/>
 <text class="tt" x="1410.0" y="972.0">OUTSIDE WORLD</text>
 <text class="tb" x="1410.0" y="993.0"><tspan class="m">use_mcp_tool</tspan> · <tspan class="m">use_rest_api</tspan></text>
 <text class="tb" x="1410.0" y="1008.5"><tspan class="m">web_search</tspan> / <tspan class="m">web_fetch</tspan>: Tavily, Brave, Serper</text>
 <text class="tb" x="1410.0" y="1024.0"><tspan class="m">browser_action</tspan></text>
-<text class="tb n" x="1410.0" y="1039.5">MCP and REST secrets stay as placeholders</text>
+<text class="tb n" x="1410.0" y="1039.5">secrets: Cline's <tspan class="m">~/.cline/data/secrets.json</tspan></text>
 <path class="ar  ev-code" d="M1262.0,292.0 L1262.0,306.0 L42.0,306.0 L42.0,400.0 L48.0,400.0" marker-end="url(#mk-ink)"/>
 <text class="al" x="1000" y="321" text-anchor="middle">each roadmap phase becomes one Developer task</text>
 <path class="ar  ev-code" d="M1686.1,403.0 L1686.1,314.0 L1400.0,314.0 L1400.0,294.0" marker-end="url(#mk-ink)"/>
@@ -579,8 +588,8 @@ thead th {
 <text class="al" x="498" y="737" text-anchor="start">request</text>
 <path class="ar mem ev-code" d="M692.0,690.0 L750.0,690.0" marker-end="url(#mk-mem)"/>
 <text class="al" x="721" y="684" text-anchor="middle">raw tail</text>
-<path class="ar mem ev-code" d="M692.0,803.0 L750.0,803.0" marker-end="url(#mk-mem)"/>
-<text class="al" x="721" y="797" text-anchor="middle">tool call</text>
+<path class="ar mem ev-code" d="M692.0,781.0 L750.0,781.0" marker-end="url(#mk-mem)"/>
+<text class="al" x="721" y="775" text-anchor="middle">tool call</text>
 <path class="ar mem ev-code" d="M936.0,648.0 L936.0,622.0" marker-end="url(#mk-mem)"/>
 <text class="al" x="944" y="640" text-anchor="start">writes</text>
 <path class="ar  ev-code" d="M1132.0,590.0 L1178.0,590.0" marker-end="url(#mk-ink)"/>
@@ -642,7 +651,7 @@ thead th {
 <text class="tb" x="1172.0" y="1195.0">same numbers on both</text>
 <text class="tb n" x="1172.0" y="1210.0">updated 6 Nov 2026</text>
 <text class="tb strong" x="50.0" y="1250.0"><tspan class="m">6 Nov 2026 totals  ·  8 projects  ·  1,496 tasks  ·  2,418 h 25 m  ·  180,622 LLM calls  ·  $2,156.81  ·  818,967 lines  ·  3,621 files</tspan></text>
-<text class="tb n" x="50.0" y="1267.0">tasks, hours, calls and cost exist per task in task_context.json; the agent keeps no line or file counter, so lines and files are probably counted in the repos (inferred)</text>
+<text class="tb n" x="50.0" y="1267.0">hours = time spent waiting on the model (≈ 48 s per call), not working time · handoffs copy a parent's cost into the child · lines and files are not tracked by the agent (counted in the repos, inferred)</text>
 <text class="tt" x="50.0" y="1296.0">CONTENT FACTORY · THE SAME AGENT ON A SCHEDULE</text>
 <rect class="box  ev-site" x="50" y="1308" width="296" height="90" rx="3"/>
 <text class="tt" x="62.0" y="1328.0">NEWS ANALYTICS · ON /PROOF</text>
@@ -676,7 +685,7 @@ thead th {
 <line class="trule" x1="1380" y1="1200" x2="1726" y2="1200"/>
 <text class="tl" x="1396.0" y="1217.0">SOURCES</text>
 <text class="tb" x="1396.0" y="1234.0">цнтр.рф, 75 pages · /proof with 24 project docs</text>
-<text class="tb" x="1396.0" y="1250.0"><tspan class="m">tao-coder</tspan> 3.1.2 VSIX from the Marketplace</text>
+<text class="tb" x="1396.0" y="1250.0"><tspan class="m">tao-coder</tspan> 3.1.2 VSIX, diffed against 12 Cline releases</text>
 <line class="trule" x1="1380" y1="1260" x2="1726" y2="1260"/>
 <text class="tl" x="1396.0" y="1275.0">SNAPSHOT</text>
 <text class="tb" x="1396.0" y="1290.0"><tspan class="m">2026-11-07</tspan></text>
@@ -685,7 +694,7 @@ thead th {
 <text class="tb" x="1546.0" y="1290.0"><tspan class="m">1 / 1</tspan></text>
 <line class="trule" x1="1630" y1="1260" x2="1630" y2="1296"/>
 <text class="tl" x="1646.0" y="1275.0">REV</text>
-<text class="tb" x="1646.0" y="1290.0"><tspan class="m">A</tspan></text>
+<text class="tb" x="1646.0" y="1290.0"><tspan class="m">B</tspan></text>
 <line class="trule" x1="1380" y1="1296" x2="1726" y2="1296"/>
 <text class="tl" x="1396.0" y="1313.0">LINE = EVIDENCE</text>
 <line class="lkey ev-code" x1="1396" y1="1324" x2="1436" y2="1324"/>
@@ -713,16 +722,16 @@ thead th {
   <section>
     <h2>One roadmap phase, start to finish</h2>
     <ol class="steps">
-<li><span class="zs"><span class="z">A3</span><span class="z">A5</span></span><p>The owner starts in <b>Architect mode</b>. The agent walks nine stages and writes one document per stage with the owner: product concept, audience, design system, architecture, the <code>check_all.sh</code> contract, the roadmap, decisions and finally <code>README_AI.md</code>, the “project bible” every later task reads.</p></li>
-<li><span class="zs"><span class="z">A7</span><span class="z">C1</span></span><p>The roadmap is cut into phases sized for one task. The owner selects a phase, adds it to the chat and writes «Выполняем Этап N». A Developer task starts with its own folder under <code>.taocoder/tasks/</code>. Tasks can also start from a cron schedule (then autonomously), a handoff from another mode, or a self-delay.</p></li>
-<li><span class="zs"><span class="z">C3</span><span class="z">C3</span></span><p>Before <em>every</em> model call the extension rebuilds the prompt: Cline's system prompt, then one message rendered from <code>task_context.json</code> (spec, criteria, plan, exit criteria, README_AI, code snippets re-read from disk, notes), then only the last 10–18 turns. The chat history does not pile up in the prompt; the kernel is the memory. That is the whole “bounded context” idea.</p></li>
-<li><span class="zs"><span class="z">D3</span></span><p>The model must answer with exactly one tool call. Each call adds to the task's call counter and cost, which is where the /proof numbers come from: 121 calls and $1.44 per task on average.</p></li>
-<li><span class="zs"><span class="z">D7</span><span class="z">E5</span></span><p>The current stage's allowlist decides whether the call may run. Clarification and data collection can read and ask but not edit; development and rework can edit and run commands; audit can run checks with approval; only report can finish the task.</p></li>
-<li><span class="zs"><span class="z">E5</span></span><p>Shell commands go through a fixed classifier: blacklists, then approval rules, then whitelists, else “unknown”. Dangerous and unknown commands need the owner. Secrets are written as <code>{{SECRET:KEY}}</code> and substituted only at execution time.</p></li>
-<li><span class="zs"><span class="z">D5</span><span class="z">C5</span></span><p>Memory is written three ways: the agent calls <code>taocoder_*</code> tools on purpose; every 5 user turns an <b>update-cycle</b> LLM call extracts facts from the turns that are about to leave the prompt; and the owner edits the Cockpit panel. Each update-cycle takes a snapshot first, so the context can be rolled back.</p></li>
-<li><span class="zs"><span class="z">B7</span><span class="z">C7</span><span class="z">C8</span></span><p>To move on, the agent calls <code>taocoder_set_stage</code> with a reason and evidence ids. The gate checks the ids exist, every exit criterion is true and, around audit, that each acceptance criterion has a verdict. <code>check_all_passed</code> is one of those criteria: the agent runs <code>bash check_all.sh</code> and sets the flag itself. Failing audit sends the task to rework.</p></li>
+<li><span class="zs"><span class="z">A3</span><span class="z">A5</span></span><p>The owner starts in <b>Architect mode</b>. The agent walks nine stages and writes one document per stage with the owner: product concept, audience, design system, architecture, the <code>check_all.sh</code> contract, the roadmap, decisions and finally <code>README_AI.md</code>, the “project bible” later tasks read. The model decides which documents a project needs and may jump between stages.</p></li>
+<li><span class="zs"><span class="z">A7</span><span class="z">C1</span></span><p>The roadmap is cut into phases sized for one task. The owner selects a phase, adds it to the chat and writes «Выполняем Этап N». A Developer task starts with its own folder under <code>.taocoder/tasks/</code>. Tasks can also start from a cron schedule, a handoff from another mode, or a self-delay. A task in a custom mode first asks the vendor server for a launch from the owner's plan.</p></li>
+<li><span class="zs"><span class="z">C3</span></span><p>Before <em>every</em> model call the extension rebuilds the request: Cline's system prompt; one kernel message rendered from <code>task_context.json</code> (a newest-first feed of code refs, notes and changes that is never trimmed, then spec, criteria, README_AI, the stage prompt and exit criteria); the stored history, which each update-cycle cuts back to 20 messages; and a fresh tail with the plan and whatever changed since the kernel was cached.</p></li>
+<li><span class="zs"><span class="z">D3</span></span><p>The model must answer with exactly one tool call. Each call adds to the task's call counter, cost and duration. Duration is time spent inside model calls, so the 2,418 hours on /proof are about 48 seconds per call of model time, not working time.</p></li>
+<li><span class="zs"><span class="z">D7</span><span class="z">E5</span></span><p>The stage's allowlist is applied twice: disallowed tools are removed from the tool list the model sees, and any that slip through are rejected with an error naming the stage that allows them. Clarification and data collection cannot edit files; only report can finish. The per-stage “needs confirmation” flags change nothing in practice.</p></li>
+<li><span class="zs"><span class="z">E5</span></span><p>Shell commands are classified: blacklists, approval rules, then whitelists matched on the first segment only. Dangerous and unknown commands ask the owner unless auto-approve-all is on; then only <code>rm</code> and <code>git checkout --</code> still ask. Secrets are written as <code>{{SECRET:KEY}}</code> and substituted only at execution time.</p></li>
+<li><span class="zs"><span class="z">D5</span><span class="z">C5</span></span><p>Memory is written four ways: the agent's <code>taocoder_*</code> calls; an <b>update-cycle</b> every 5 tool results that extracts notes and code refs from recent tool traffic (it never sees the model's reasoning) and then truncates the stored history; a <b>repair planner</b> that rewrites an empty or broken plan or spec; and the owner's edits in the Cockpit panel.</p></li>
+<li><span class="zs"><span class="z">B7</span><span class="z">C7</span><span class="z">C8</span></span><p>To change stage the agent calls <code>taocoder_set_stage</code>. The gate checks that no exit criterion of the stage is false and, around audit, that acceptance criteria have verdicts. The criteria are flags the agent sets itself or the owner ticks in the Cockpit. <code>check_all_passed</code> is one of them: nothing runs the script to confirm it. Failing audit sends the task to rework.</p></li>
 <li><span class="zs"><span class="z">B7</span><span class="z">A7</span><span class="z">A8</span></span><p>The report stage ends the task. The owner goes back to the roadmap for the next phase; Ops mode deploys (<code>deploy_remote.sh</code> → <code>deploy.sh</code> → Docker) and Debug mode runs E2E tests against the running stack. On /proof that loop averages 2–48 tasks per roadmap phase, because fixes and rework are separate tasks.</p></li>
-<li><span class="zs"><span class="z">E3</span><span class="z">E4</span><span class="z">E6</span></span><p>Outside the agent, a script in the site repo (<code>scripts/generate-proof.ts</code> with <code>projects.json</code>) rolls the task data of eight repos into the HTML block between <code>PROOF_DATA</code> markers and embeds 24 project documents. The Astro site serves it at /proof in Russian and English.</p></li>
+<li><span class="zs"><span class="z">E3</span><span class="z">E4</span><span class="z">E6</span></span><p>Outside the agent, a script in the site repo (<code>scripts/generate-proof.ts</code> with <code>projects.json</code>) rolls the task data of eight repos into the HTML block between <code>PROOF_DATA</code> markers and embeds 24 project documents. A handoff copies the parent task's cost into the child, so summed costs can count a chain twice.</p></li>
 <li><span class="zs"><span class="z">F3</span><span class="z">F4</span></span><p>The same tool also writes the blog. Ten AI-industry reviews are signed «Статья написана ИИ инструментом TAO•MODES». Their Monday/Thursday cadence and the News Analytics project point to a scheduled custom mode, though no page says so outright.</p></li>
     </ol>
   </section>
@@ -734,15 +743,33 @@ thead th {
     <div class="tbl-wrap"><table class="diff">
       <thead><tr><th scope="col">Topic</th><th scope="col">The site says</th><th scope="col">The v3.1.2 code does</th></tr></thead>
       <tbody>
-<tr><th scope="row">Quality gate</th><td>“Задача не завершится, пока check_all.sh не покажет зелёный статус.”</td><td>No code runs or parses <code>check_all.sh</code>. <code>check_all_passed</code> is a flag the agent sets; the gate checks only the flag.</td></tr>
-<tr><th scope="row">Secrets</th><td>Stored in VS Code SecretStorage; never on disk in plain text.</td><td>Migrated into <code>~/.cline/data/secrets.json</code>: plain JSON with 0600 permissions, in upstream Cline's folder.</td></tr>
-<tr><th scope="row">Cost breakdown</th><td>By stage and by role mode.</td><td>By call type only: agent, handover, update_cycle, repair, crash_analyst.</td></tr>
-<tr><th scope="row">JEV decision model</th><td>Probabilistic validation of stage transitions.</td><td>Off by default. When on: unknown shell commands, a self-check tool, and hooks in custom modes. Built-in modes have no hooks.</td></tr>
-<tr><th scope="row">Prompt history</th><td>“The last few turns” (10–15 in the README).</td><td>Raw tail of 10 plus a window of 8, capped at 50k tokens.</td></tr>
-<tr><th scope="row">Architect order</th><td>… → README_AI → ROADMAP → CHECK_ALL.</td><td>… → ARCHITECTURE → CHECK_ALL → ROADMAP → DECISIONS → README_AI.</td></tr>
-<tr><th scope="row">Telemetry and price</th><td>“Никакой телеметрии.” Guide: free; product page: $100/month.</td><td>Marketplace says Free. Cline's telemetry code is bundled but keyless by default; a client for <code>api.taocoder.thinkingos.tech</code> handles subscription status and per-launch checks.</td></tr>
+<tr><th scope="row">Quality gate</th><td>“Задача не завершится, пока check_all.sh не покажет зелёный статус.”</td><td>No code runs or parses <code>check_all.sh</code>. <code>check_all_passed</code> is a flag the agent sets (or the owner ticks); the gate checks only the flag.</td></tr>
+<tr><th scope="row">Stage transitions</th><td>Validated transitions backed by evidence and the JEV decision model.</td><td>The gate blocks only on criteria explicitly false; evidence ids are checked in one input form only; any stage can be targeted; nobody is asked to approve. JEV is off by default and wired into hooks of custom modes only.</td></tr>
+<tr><th scope="row">Command safety</th><td>“Агент не выполнит rm -rf без явного разрешения.”</td><td>True for <code>rm</code>. With auto-approve-all every other blacklisted command (<code>sudo</code>, <code>git reset --hard</code>, <code>curl … | sh</code>) runs unasked; whitelists match the first segment only; the JEV verdict is computed and ignored.</td></tr>
+<tr><th scope="row">Large files</th><td>The agent cannot fully rewrite large files.</td><td>Rewriting a file over 300 lines asks for approval unless auto-approve is on; a 50 % truncation guard exists but is opt-in.</td></tr>
+<tr><th scope="row">Memory</th><td>An update-cycle extracts facts, then archives old messages.</td><td>It runs every 5 tool results, never sees the model's reasoning, and truncates the stored history to 20 messages; nothing is archived. Notes that mention a file path are dropped.</td></tr>
+<tr><th scope="row">Autonomous runs</th><td>Scheduled tasks run without asking.</td><td>The “AUTONOMOUS MODE” prompt is never sent. Autonomy comes from auto-answered questions, blocked <code>rm</code>/unknown commands and auto-approved tools. Cron ignores the timezone field (UTC).</td></tr>
+<tr><th scope="row">Secrets</th><td>Stored in VS Code SecretStorage; never on disk in plain text.</td><td>Cline's own <code>~/.cline/data/secrets.json</code> (plain JSON, 0600), inherited from upstream. Command output is not masked; a REST OAuth client secret is never scrubbed.</td></tr>
+<tr><th scope="row">Metrics</th><td>Duration, calls, tokens and cost, broken down by stage and role mode.</td><td>Broken down by call type. Duration is time inside model calls. A handoff copies the parent's cost into the child; knowledge-migration calls are not counted.</td></tr>
+<tr><th scope="row">Telemetry and price</th><td>“Никакой телеметрии.” Guide: free; product page: $100/month.</td><td>Telemetry is forced off. Logged-in clients poll <code>api.taocoder.thinkingos.tech</code> for subscription status on every UI refresh, and each new task in a custom mode (shipped JSON modes included) uses a plan launch.</td></tr>
       </tbody>
     </table></div>
+  </section>
+
+  <section>
+    <h2>Likely defects in v3.1.2</h2>
+    <p class="intro">Found by reading the code against upstream Cline, not by running it, so treat each as probable
+    rather than proven. Several of them change what the /proof numbers and the safety claims mean.</p>
+    <ul class="defects">
+<li><b>Replies over 5 minutes.</b> each streamed chunk starts a 300 s timer that is never cleared and stops the stream; long replies end silently.</li>
+<li><b>Slow approvals.</b> a tool or approval pending for more than about 3 minutes throws “Tool execution timed out” and ends the turn loop.</li>
+<li><b>Schedules.</b> cron is evaluated in UTC whatever the timezone field says; dismissing the missed-run dialog does not stop the run; a self-delay resumes only if that chat is in the foreground.</li>
+<li><b>Stage machine.</b> the README_AI contract and the tool spec send the model to <code>architecture_docs</code>, which is not a pipeline stage; the acceptance-criteria tool always fails in Free mode.</li>
+<li><b>Memory.</b> the Cockpit's force-update button writes to the wrong file; change-visibility updates from the extractor are dropped; one kernel cache slot is shared by parallel tasks.</li>
+<li><b>Command rules.</b> an ungrouped regex makes <code>git init</code> and <code>npm init</code> “dangerous”.</li>
+<li><b>Connections.</b> MCP servers added through <code>manage_connections</code> are connected but not saved; a REST request with a missing key goes out with the literal <code>{{SECRET:…}}</code>.</li>
+<li><b>Shipped leftovers.</b> 11 debug beacons post tool names and file paths to <code>127.0.0.1:19345</code>; a test script carries a hard-coded API key for a TaoBridge server; a PWA prototype and two 195 KB tailwind logs ship in the package.</li>
+    </ul>
   </section>
 
   <section>
@@ -775,8 +802,9 @@ thead th {
       (<code>~/database/20261107_cntr_proof_site/</code>).</li>
       <li>/proof embedded data: 24 documents (Architecture, README, README_AI for 8 projects) from the
       <code>proof-docs-data</code> JSON block.</li>
-      <li>VS Code Marketplace package <code>thinkingos.tao-coder</code> 3.1.2 (9.6 MB VSIX; read, not run): stage tables,
-      tool specs, Task Context store, update-cycle, command classifier.</li>
+      <li>VS Code Marketplace package <code>thinkingos.tao-coder</code> 3.1.2 (9.6 MB VSIX; read, not run). Every
+      function and statement was fingerprinted and matched against Cline 3.70–4.0.12; the 2.2 MB without a match
+      (plus 0.9 MB in the UI) was read module by module.</li>
       <li>Blog posts on the release notes (3.0.1, 3.1.0), custom modes and scheduling, bounded context, JEV, MCP secrets and the
       methodology guide.</li>
     </ul>

@@ -3,7 +3,7 @@
 //
 // Output (OUT_DIR):
 //   summary.json      match stats and per-topic sizes
-//   index.tsv         one row per novel unit: offset, size, class (new|modified), topic, sample strings
+//   index.tsv         one row per novel unit: offset (JS string index, UTF-16 units), size, class, topic, sample strings
 //   chunks/NN_<topic>.js   prettified novel units in bundle order, grouped by topic, each with an offset header
 import { createRequire } from "node:module";
 import fs from "node:fs";

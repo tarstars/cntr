@@ -186,7 +186,7 @@ for k, s in enumerate([
     text(238, 238 + k * 16, s, ("tb " + cls).strip())
 
 box("repo", 906, 84, 290, 208, "Project repo", [
-    None, None, None,
+    "", "", "",
     "`CHECK_ALL.md` + `check_all.sh`",
     "`README_AI.md` · the project bible",
     "`.taocoder/` tasks · check_runs · modes",
@@ -221,13 +221,13 @@ arrow([(1446, 133), (1484, 133)], "deploy", (1465, 127), anchor="middle")
 arrow([(1446, 243), (1484, 243)], "E2E", (1465, 237), anchor="middle")
 
 # ---------------------------------------------------------------- band 2: one task
-band("2", 350, "One task", "inner loop inside the VS Code extension (a Cline fork, tao-coder 3.1.2) · minutes to hours")
+band("2", 350, "One task", "inner loop inside the VS Code extension (Cline 3.79 + 2.2 MB of TAO code, v3.1.2) · minutes to hours")
 
 # column A: triggers + custom modes
 box("triggers", 50, 372, 190, 514, "A task starts from", [
     ("chat", "h"), "the owner types a task or", "adds selected ROADMAP text", None,
-    ("schedule", "h"), "`.taocoder/schedules.json`", "checked every 60 s while", "VS Code is open; missed runs:", "run now / skip / reschedule",
-    "autonomous: no questions,", "`rm` and unknown cmds blocked", None,
+    ("schedule", "h"), "`.taocoder/schedules.json`", "checked every 60 s while", "VS Code is open; cron in UTC",
+    "autonomous: questions are", "auto-answered; `rm` and", "unknown commands blocked", None,
     ("handoff", "h"), "`taocoder_create_handoff`", "→ `handoff_bundle.json`", "  + `handoff_summary.md`", "new task id, fresh context",
     ("migration: one LLM call", "n"), None,
     ("self-delay", "h"), "`taocoder_self_delay`:", "the same task resumes later", None,
@@ -236,29 +236,30 @@ badge(228, 372 + 20 + 21 + 15.2 * 12 + 7.6 * 2 - 4)  # next to "handoff" heading
 
 box("modes", 50, 922, 190, 150, "TAO·MODES", [
     "custom modes on disk:", "`.taocoder/modes/<id>/`", "`mode.json` + stage files:", "prompt, allowed / forbidden",
-    "tools, exit criteria, hooks", ("Mode Builder ships as one", "n")], lh=15.2)
+    "tools, exit criteria, hooks", ("1 plan launch per new task", "n")], lh=15.2)
 
 # column B: prompt builder + LLM
 box("prompt", 288, 372, 404, 344, "Prompt builder · rebuilt for every LLM request", [])
 box("sys", 300, 402, 380, 70, "system prompt · Cline builder", [
     "agent role, stage tool instructions, tool specs,", "MCP servers, rules (`.taocoderules`), skills"], kind="sub", lh=15)
 box("kernel", 300, 480, 380, 168, "messages[0] · Task Context kernel", [
-    "header: “Task Context Kernel — YOUR PERSISTED MEMORY”",
-    "fixed top: mode, stage, spec, acceptance criteria,",
-    "constraints, plan, exit criteria",
-    "`README_AI.md` (once) · results of the last 5 tasks",
-    "rule: “Every response MUST be a tool call”",
-    "feed, newest first: code snippets re-read from disk",
-    "(≤ 25 × 150 lines), notes, changes",
-    ("budget: 25k tokens target, 50k hard", "n")], kind="mem", lh=14.6)
-box("recent", 300, 656, 380, 52, "messages[1..n] · recent window", [
-    "last 10 raw turns + up to 8 more, capped at 50k tokens"], kind="sub", lh=15)
+    "header + feed, newest first: refs, notes, changes",
+    "(the feed is outside the budget, never trimmed)",
+    "stage · spec · acceptance criteria · constraints",
+    "`README_AI.md` + last 5 done tasks, until 1st cycle",
+    "ALGORITHM: “Every response MUST be a tool call”",
+    "stage prompt · exit criteria (cut first at 200k chars)",
+    "snippets: 25 oldest refs × 150 lines; cached until",
+    ("spec, stage or an update-cycle changes", "n")], kind="mem", lh=14.6)
+box("recent", 300, 656, 380, 52, "messages[1..n] · history, then a tail", [
+    "history ≤ 50k tokens · tail: plan + KERNEL UPDATES"], kind="sub", lh=15)
 
 box("llm", 288, 752, 404, 134, "LLM provider · one paid call per turn", [
     "DeepSeek V4 Flash / Pro recommended; Anthropic, OpenAI,",
     "Gemini, Qwen, OpenRouter, Bedrock, Vertex, Azure, Ollama",
     "reply: exactly one tool call, in Cline's tool format",
-    ("/proof average per task: 121 calls · $1.44 · 1 h 37 m", "c")], kind="cost", money=True)
+    ("/proof average per task: 121 calls · $1.44 · 1 h 37 m", "c"),
+    ("a never-cleared 300 s chunk timer cuts replies over 5 min", "n")], kind="cost", money=True)
 
 # column C: task context + write paths
 box("tc", 740, 372, 392, 248, "Task Context · `.taocoder/tasks/<task_id>/`", [
@@ -269,20 +270,21 @@ box("tc", 740, 372, 392, 248, "Task Context · `.taocoder/tasks/<task_id>/`", [
     "stale refs are re-found by hash, else flagged",
     "notes · hypothesis / decision / negative_knowledge / info",
     "changes (diff refs) · execution_log · feedback · user notes",
-    ("metrics · api_call_count, total_cost, duration_ms,", "c"),
-    ("tokens, tool_call_count (summed later on /proof)", "c"),
+    ("metrics · calls, cost, tokens, duration = time in LLM calls", "c"),
+    ("a handoff copies the parent's whole cost into the child", "c"),
     "next to it: `audit.jsonl`, `snapshots/<id>/`, `artifacts/diffs/`"], kind="mem", lh=15.6)
 
-box("writes", 740, 648, 392, 238, "Three ways into Task Context", [])
-box("uc", 752, 672, 368, 88, "update-cycle · automatic", [
-    "every 5 new user turns, or kernel deltas over 10k tokens",
-    "extractor reads turns “about to be PERMANENTLY DELETED”",
-    "→ JSON: code refs, notes, plan statuses; snapshot, merge"], kind="mem", lh=15, money=True)
-box("tools_mem", 752, 766, 368, 64, "taocoder_* tools · deliberate", [
-    "`update_task_spec` · `add_relevant_code_ref` · `add_note`",
-    "`update_implementation_plan` · `update_exit_criteria` …"], kind="mem", lh=14)
-box("cockpit", 752, 836, 368, 44, "Cockpit panel · the owner", [], kind="mem")
-text(764, 872, "edits spec / plan / criteria, private notes; snapshot and roll back", "tb")
+box("writes", 740, 648, 392, 238, "Four ways into Task Context", [])
+box("uc", 752, 674, 368, 84, "update-cycle · automatic", [
+    "every 5 tool results, run before the agent's next call",
+    "extractor reads tool calls and results, not reasoning",
+    "→ notes, code refs, plan statuses; history cut to 20 msgs"], kind="mem", lh=14, money=True)
+box("tools_mem", 752, 762, 368, 38, "taocoder_* tools · deliberate", [], kind="mem")
+text(764, 795, "`update_task_spec` · `add_relevant_code_ref` · `add_note` …", "tb")
+box("repair", 752, 804, 368, 38, "repair planner · automatic", [], kind="mem", money=True)
+text(764, 837, "empty or broken plan / spec / AC → an LLM rewrites them", "tb")
+box("cockpit", 752, 846, 368, 38, "Cockpit panel · the owner", [], kind="mem")
+text(764, 879, "edits spec / plan / AC, ticks exit criteria, notes; rollback", "tb")
 
 # column D: stage machine, gate, exit criteria, access matrix
 box("stages", 1180, 372, 546, 144, "Stage machine · Developer mode (default pipeline)", [], kind="gate")
@@ -310,24 +312,23 @@ rep_x, rep_w = pos["report"]
 REPORT_TOP = (rep_x + rep_w / 2, 404)
 
 box("gate", 1180, 532, 250, 226, "Stage gate · checks in order", [
-    "1  target is in the pipeline, or rework",
-    "2  reason + evidence ids, each of",
-    "    which must exist in Task Context",
-    "3  every exit criterion here is true",
+    "1  target: any stage in the pipeline",
+    "    or rework: stages can be skipped",
+    "2  reason + evidence; ids are checked",
+    "    only when given as an id object",
+    "3  no exit criterion here is false",
     "4  leave audit: each AC has a verdict;",
     "    enter report: every AC = pass",
-    "5  custom modes only: required",
-    "    secrets, stage_exit hooks (JEV)",
-    ("then stage_history += 1 and the next", "n"),
-    ("stage's criteria are reset to false", "n"),
-    ("audit → report needs the owner", "n")], kind="gate", lh=14.8)
+    "5  custom modes: secrets, exit hooks",
+    ("then the next stage's criteria reset", "n"),
+    ("the owner is never asked to approve", "n")], kind="gate", lh=14.8)
 box("exit", 1446, 532, 280, 226, "Exit criteria · development", [
     "`implementation_done` · `tests_added`",
     "`check_all_passed` · `code_modular`",
     "`code_production_quality`",
     "`no_hacks_or_workarounds`",
-    "set true by the agent with",
-    "`taocoder_update_exit_criteria`",
+    "set by the agent (`update_exit_criteria`)",
+    "or ticked by the owner in the Cockpit",
     None,
     ("check_all.sh", "h"),
     "`bash check_all.sh` runs typecheck, lint,",
@@ -337,7 +338,7 @@ box("exit", 1446, 532, 280, 226, "Exit criteria · development", [
     ("reports `check_all_passed` itself", "n")], kind="gate", lh=14.6)
 
 box("matrix", 1180, 772, 546, 114, "Tool access by stage", [], kind="gate")
-for lx, v, lab in [(1490, "●", "allowed"), (1556, "◐", "asks the owner"), (1650, "○", "blocked")]:
+for lx, v, lab in [(1430, "●", "allowed"), (1496, "◐", "flagged “needs ok”, no effect"), (1662, "○", "blocked")]:
     sym(lx, 788, v)
     text(lx + 9, 792, lab, "tb n")
 cols = ["clarify", "collect", "develop", "audit", "rework", "report"]
@@ -362,13 +363,13 @@ box("write", 546, 952, 220, 112, "write", [
     kind="sub", lh=15.5)
 box("safety", 782, 952, 600, 112, "`execute_command` → command safety", [
     "`classifyCommand`: user blacklist → built-in blacklist → user require_approval → user whitelist",
-    "→ built-in whitelist → else unknown · blacklist: `rm`, `sudo`, `git reset --hard`, `curl … | sh`",
-    "dangerous, requires_approval, unknown → the owner approves · safe → runs if auto-approve allows",
-    "JEV (off by default): unknown + noul(“is it SAFE?”) ≥ 0.7 → safe; on an error it fails open",
+    "→ built-in whitelist, matched on the first segment only (`bash`, `python`, `npx` are “safe”)",
+    "non-safe → the owner approves, but auto-approve-all runs blacklisted commands too",
+    "(only `rm` and `git checkout --` always ask) · JEV is consulted, but its verdict is ignored",
     "`{{SECRET:KEY}}` is substituted just before the command runs"], kind="gate", lh=14.6)
 box("outside", 1398, 952, 316, 112, "outside world", [
     "`use_mcp_tool` · `use_rest_api`", "`web_search` / `web_fetch`: Tavily, Brave, Serper",
-    "`browser_action`", ("MCP and REST secrets stay as placeholders", "n")], kind="sub", lh=15.5)
+    "`browser_action`", ("secrets: Cline's `~/.cline/data/secrets.json`", "n")], kind="sub", lh=15.5)
 
 # band 2 arrows
 arrow([(1262, 292), (1262, 306), (42, 306), (42, 400), (48, 400)],
@@ -379,7 +380,7 @@ arrow([(240, 430), (286, 430)], "start", (263, 424), anchor="middle")
 arrow([(740, 560), (694, 560)], "render", (717, 554), anchor="middle", kind="mem")
 arrow([(490, 716), (490, 750)], "request", (498, 737))
 arrow([(692, 690), (750, 690)], "raw tail", (721, 684), anchor="middle", kind="mem")
-arrow([(692, 803), (750, 803)], "tool call", (721, 797), anchor="middle", kind="mem")
+arrow([(692, 781), (750, 781)], "tool call", (721, 775), anchor="middle", kind="mem")
 arrow([(936, 648), (936, 622)], "writes", (944, 640), kind="mem")
 arrow([(1132, 590), (1178, 590)], "reads", (1155, 584), anchor="middle")
 arrow([(1300, 516), (1300, 530)], kind="gate")
@@ -414,8 +415,8 @@ tot = "  ·  ".join([
     "6 Nov 2026 totals", "8 projects", "1,496 tasks", "2,418 h 25 m", "180,622 LLM calls",
     "$2,156.81", "818,967 lines", "3,621 files"])
 text(50, 1250, f"`{tot}`", "tb strong")
-text(50, 1267, "tasks, hours, calls and cost exist per task in task_context.json; the agent keeps no line or file counter, "
-               "so lines and files are probably counted in the repos (inferred)", "tb n")
+text(50, 1267, "hours = time spent waiting on the model (≈ 48 s per call), not working time · handoffs copy a parent's cost "
+               "into the child · lines and files are not tracked by the agent (counted in the repos, inferred)", "tb n")
 
 text(50, 1296, "Content factory · the same agent on a schedule", "tt", upper=True)
 cf = [
@@ -446,9 +447,9 @@ text(TX + 16, TY + 62, "pipeline of the agent behind цнтр.рф/proof", "tb")
 line(TX, TY + 76, TX + TW, TY + 76, "trule")
 text(TX + 16, TY + 93, "Sources", "tl", upper=True)
 text(TX + 16, TY + 110, "цнтр.рф, 75 pages · /proof with 24 project docs", "tb")
-text(TX + 16, TY + 126, "`tao-coder` 3.1.2 VSIX from the Marketplace", "tb")
+text(TX + 16, TY + 126, "`tao-coder` 3.1.2 VSIX, diffed against 12 Cline releases", "tb")
 line(TX, TY + 136, TX + TW, TY + 136, "trule")
-for k, (lab, val) in enumerate([("Snapshot", "2026-11-07"), ("Sheet", "1 / 1"), ("Rev", "A")]):
+for k, (lab, val) in enumerate([("Snapshot", "2026-11-07"), ("Sheet", "1 / 1"), ("Rev", "B")]):
     cx0 = TX + [0, 150, 250][k]
     if k:
         line(cx0, TY + 136, cx0, TY + 172, "trule")
@@ -511,6 +512,14 @@ rows_html += (f'\n<tr class="total"><th scope="row">All 8 projects</th><td></td>
               f'<td>{n(S["llm_calls"] / S["tasks"])}</td><td>{S["hours"] / S["tasks"]:.1f}</td></tr>')
 
 
+def zb_unique(keys):
+    seen = []
+    for k in keys:
+        if Z[k] not in seen:
+            seen.append(Z[k])
+    return [f'<span class="z">{z}</span>' for z in seen]
+
+
 def zb(k):
     return f'<span class="z">{Z[k]}</span>'
 
@@ -519,63 +528,93 @@ steps = [
     (["architect", "repo"], "The owner starts in <b>Architect mode</b>. The agent walks nine stages and writes one "
      "document per stage with the owner: product concept, audience, design system, architecture, the "
      "<code>check_all.sh</code> contract, the roadmap, decisions and finally <code>README_AI.md</code>, the "
-     "“project bible” every later task reads."),
+     "“project bible” later tasks read. The model decides which documents a project needs and may jump between stages."),
     (["roadmap", "triggers"], "The roadmap is cut into phases sized for one task. The owner selects a phase, adds it "
      "to the chat and writes «Выполняем Этап N». A Developer task starts with its own folder under "
-     "<code>.taocoder/tasks/</code>. Tasks can also start from a cron schedule (then autonomously), a handoff "
-     "from another mode, or a self-delay."),
-    (["prompt", "kernel"], "Before <em>every</em> model call the extension rebuilds the prompt: Cline's system prompt, "
-     "then one message rendered from <code>task_context.json</code> (spec, criteria, plan, exit criteria, "
-     "README_AI, code snippets re-read from disk, notes), then only the last 10–18 turns. The chat history does "
-     "not pile up in the prompt; the kernel is the memory. That is the whole “bounded context” idea."),
-    (["llm"], "The model must answer with exactly one tool call. Each call adds to the task's call counter and cost, "
-     "which is where the /proof numbers come from: 121 calls and $1.44 per task on average."),
-    (["matrix", "exec"], "The current stage's allowlist decides whether the call may run. Clarification and data "
-     "collection can read and ask but not edit; development and rework can edit and run commands; audit can run "
-     "checks with approval; only report can finish the task."),
-    (["safety"], "Shell commands go through a fixed classifier: blacklists, then approval rules, then whitelists, "
-     "else “unknown”. Dangerous and unknown commands need the owner. Secrets are written as "
+     "<code>.taocoder/tasks/</code>. Tasks can also start from a cron schedule, a handoff from another mode, or a "
+     "self-delay. A task in a custom mode first asks the vendor server for a launch from the owner's plan."),
+    (["prompt", "kernel", "recent"], "Before <em>every</em> model call the extension rebuilds the request: Cline's system "
+     "prompt; one kernel message rendered from <code>task_context.json</code> (a newest-first feed of code refs, notes "
+     "and changes that is never trimmed, then spec, criteria, README_AI, the stage prompt and exit criteria); the "
+     "stored history, which each update-cycle cuts back to 20 messages; and a fresh tail with the plan and whatever "
+     "changed since the kernel was cached."),
+    (["llm"], "The model must answer with exactly one tool call. Each call adds to the task's call counter, cost and "
+     "duration. Duration is time spent inside model calls, so the 2,418 hours on /proof are about 48 seconds per call "
+     "of model time, not working time."),
+    (["matrix", "exec"], "The stage's allowlist is applied twice: disallowed tools are removed from the tool list the "
+     "model sees, and any that slip through are rejected with an error naming the stage that allows them. "
+     "Clarification and data collection cannot edit files; only report can finish. The per-stage “needs "
+     "confirmation” flags change nothing in practice."),
+    (["safety"], "Shell commands are classified: blacklists, approval rules, then whitelists matched on the first "
+     "segment only. Dangerous and unknown commands ask the owner unless auto-approve-all is on; then only "
+     "<code>rm</code> and <code>git checkout --</code> still ask. Secrets are written as "
      "<code>{{SECRET:KEY}}</code> and substituted only at execution time."),
-    (["writes", "uc"], "Memory is written three ways: the agent calls <code>taocoder_*</code> tools on purpose; every "
-     "5 user turns an <b>update-cycle</b> LLM call extracts facts from the turns that are about to leave the prompt; "
-     "and the owner edits the Cockpit panel. Each update-cycle takes a snapshot first, so the context can be "
-     "rolled back."),
-    (["stages", "gate", "exit"], "To move on, the agent calls <code>taocoder_set_stage</code> with a reason and evidence "
-     "ids. The gate checks the ids exist, every exit criterion is true and, around audit, that each acceptance "
-     "criterion has a verdict. <code>check_all_passed</code> is one of those criteria: the agent runs "
-     "<code>bash check_all.sh</code> and sets the flag itself. Failing audit sends the task to rework."),
+    (["writes", "uc", "repair"], "Memory is written four ways: the agent's <code>taocoder_*</code> calls; an "
+     "<b>update-cycle</b> every 5 tool results that extracts notes and code refs from recent tool traffic (it never "
+     "sees the model's reasoning) and then truncates the stored history; a <b>repair planner</b> that rewrites an "
+     "empty or broken plan or spec; and the owner's edits in the Cockpit panel."),
+    (["stages", "gate", "exit"], "To change stage the agent calls <code>taocoder_set_stage</code>. The gate checks that "
+     "no exit criterion of the stage is false and, around audit, that acceptance criteria have verdicts. The criteria "
+     "are flags the agent sets itself or the owner ticks in the Cockpit. <code>check_all_passed</code> is one of "
+     "them: nothing runs the script to confirm it. Failing audit sends the task to rework."),
     (["stages", "roadmap", "ops"], "The report stage ends the task. The owner goes back to the roadmap for the next "
      "phase; Ops mode deploys (<code>deploy_remote.sh</code> → <code>deploy.sh</code> → Docker) and Debug mode runs "
      "E2E tests against the running stack. On /proof that loop averages 2–48 tasks per roadmap phase, because "
      "fixes and rework are separate tasks."),
     (["p_gen", "p_frag", "p_proof"], "Outside the agent, a script in the site repo (<code>scripts/generate-proof.ts</code> "
      "with <code>projects.json</code>) rolls the task data of eight repos into the HTML block between "
-     "<code>PROOF_DATA</code> markers and embeds 24 project documents. The Astro site serves it at /proof in "
-     "Russian and English."),
+     "<code>PROOF_DATA</code> markers and embeds 24 project documents. A handoff copies the parent task's cost into the "
+     "child, so summed costs can count a chain twice."),
     (["c_mode", "c_blog"], "The same tool also writes the blog. Ten AI-industry reviews are signed «Статья написана ИИ "
      "инструментом TAO•MODES». Their Monday/Thursday cadence and the News Analytics project point to a scheduled "
      "custom mode, though no page says so outright."),
 ]
-steps_html = "\n".join(f'<li><span class="zs">{"".join(zb(k) for k in ks)}</span><p>{t}</p></li>' for ks, t in steps)
+steps_html = "\n".join(f'<li><span class="zs">{"".join(zb_unique(ks))}</span><p>{t}</p></li>' for ks, t in steps)
 
 diffs = [
     ("Quality gate", "“Задача не завершится, пока check_all.sh не покажет зелёный статус.”",
-     "No code runs or parses <code>check_all.sh</code>. <code>check_all_passed</code> is a flag the agent sets; the gate checks only the flag."),
+     "No code runs or parses <code>check_all.sh</code>. <code>check_all_passed</code> is a flag the agent sets "
+     "(or the owner ticks); the gate checks only the flag."),
+    ("Stage transitions", "Validated transitions backed by evidence and the JEV decision model.",
+     "The gate blocks only on criteria explicitly false; evidence ids are checked in one input form only; any stage "
+     "can be targeted; nobody is asked to approve. JEV is off by default and wired into hooks of custom modes only."),
+    ("Command safety", "“Агент не выполнит rm -rf без явного разрешения.”",
+     "True for <code>rm</code>. With auto-approve-all every other blacklisted command (<code>sudo</code>, "
+     "<code>git reset --hard</code>, <code>curl … | sh</code>) runs unasked; whitelists match the first segment "
+     "only; the JEV verdict is computed and ignored."),
+    ("Large files", "The agent cannot fully rewrite large files.",
+     "Rewriting a file over 300 lines asks for approval unless auto-approve is on; a 50 % truncation guard exists "
+     "but is opt-in."),
+    ("Memory", "An update-cycle extracts facts, then archives old messages.",
+     "It runs every 5 tool results, never sees the model's reasoning, and truncates the stored history to 20 "
+     "messages; nothing is archived. Notes that mention a file path are dropped."),
+    ("Autonomous runs", "Scheduled tasks run without asking.",
+     "The “AUTONOMOUS MODE” prompt is never sent. Autonomy comes from auto-answered questions, blocked "
+     "<code>rm</code>/unknown commands and auto-approved tools. Cron ignores the timezone field (UTC)."),
     ("Secrets", "Stored in VS Code SecretStorage; never on disk in plain text.",
-     "Migrated into <code>~/.cline/data/secrets.json</code>: plain JSON with 0600 permissions, in upstream Cline's folder."),
-    ("Cost breakdown", "By stage and by role mode.",
-     "By call type only: agent, handover, update_cycle, repair, crash_analyst."),
-    ("JEV decision model", "Probabilistic validation of stage transitions.",
-     "Off by default. When on: unknown shell commands, a self-check tool, and hooks in custom modes. Built-in modes have no hooks."),
-    ("Prompt history", "“The last few turns” (10–15 in the README).",
-     "Raw tail of 10 plus a window of 8, capped at 50k tokens."),
-    ("Architect order", "… → README_AI → ROADMAP → CHECK_ALL.",
-     "… → ARCHITECTURE → CHECK_ALL → ROADMAP → DECISIONS → README_AI."),
+     "Cline's own <code>~/.cline/data/secrets.json</code> (plain JSON, 0600), inherited from upstream. Command output "
+     "is not masked; a REST OAuth client secret is never scrubbed."),
+    ("Metrics", "Duration, calls, tokens and cost, broken down by stage and role mode.",
+     "Broken down by call type. Duration is time inside model calls. A handoff copies the parent's cost into the "
+     "child; knowledge-migration calls are not counted."),
     ("Telemetry and price", "“Никакой телеметрии.” Guide: free; product page: $100/month.",
-     "Marketplace says Free. Cline's telemetry code is bundled but keyless by default; a client for "
-     "<code>api.taocoder.thinkingos.tech</code> handles subscription status and per-launch checks."),
+     "Telemetry is forced off. Logged-in clients poll <code>api.taocoder.thinkingos.tech</code> for subscription "
+     "status on every UI refresh, and each new task in a custom mode (shipped JSON modes included) uses a "
+     "plan launch."),
 ]
 diffs_html = "\n".join(f"<tr><th scope=\"row\">{a}</th><td>{b}</td><td>{c}</td></tr>" for a, b, c in diffs)
+
+defects = [
+    ("Replies over 5 minutes", "each streamed chunk starts a 300 s timer that is never cleared and stops the stream; long replies end silently."),
+    ("Slow approvals", "a tool or approval pending for more than about 3 minutes throws “Tool execution timed out” and ends the turn loop."),
+    ("Schedules", "cron is evaluated in UTC whatever the timezone field says; dismissing the missed-run dialog does not stop the run; a self-delay resumes only if that chat is in the foreground."),
+    ("Stage machine", "the README_AI contract and the tool spec send the model to <code>architecture_docs</code>, which is not a pipeline stage; the acceptance-criteria tool always fails in Free mode."),
+    ("Memory", "the Cockpit's force-update button writes to the wrong file; change-visibility updates from the extractor are dropped; one kernel cache slot is shared by parallel tasks."),
+    ("Command rules", "an ungrouped regex makes <code>git init</code> and <code>npm init</code> “dangerous”."),
+    ("Connections", "MCP servers added through <code>manage_connections</code> are connected but not saved; a REST request with a missing key goes out with the literal <code>{{SECRET:…}}</code>."),
+    ("Shipped leftovers", "11 debug beacons post tool names and file paths to <code>127.0.0.1:19345</code>; a test script carries a hard-coded API key for a TaoBridge server; a PWA prototype and two 195 KB tailwind logs ship in the package."),
+]
+defects_html = "\n".join(f"<li><b>{a}.</b> {b}</li>" for a, b in defects)
 
 CSS = open(os.path.join(HERE, "teardown.css"), encoding="utf-8").read()
 page = f"""<title>TAO·CODER Teardown</title>
@@ -591,7 +630,8 @@ page = f"""<title>TAO·CODER Teardown</title>
   <h1>TAO·CODER Teardown</h1>
   <p class="lede">How the coding agent behind <b>цнтр.рф/proof</b> turns a product brief into code, and how its task
   logs become the numbers on that page. Rebuilt from 75 site pages, the 24 project documents embedded in /proof and
-  the published VS Code extension (<code>tao-coder</code> 3.1.2, a fork of Cline).</p>
+  the published VS Code extension (<code>tao-coder</code> 3.1.2), whose code was diffed against 12 releases of
+  Cline to separate TAO's own 2.2 MB from the Cline 3.79 it was forked from.</p>
 </header>
 
 <section class="sheet-sec" aria-label="Pipeline sheet">
@@ -633,6 +673,15 @@ page = f"""<title>TAO·CODER Teardown</title>
   </section>
 
   <section>
+    <h2>Likely defects in v3.1.2</h2>
+    <p class="intro">Found by reading the code against upstream Cline, not by running it, so treat each as probable
+    rather than proven. Several of them change what the /proof numbers and the safety claims mean.</p>
+    <ul class="defects">
+{defects_html}
+    </ul>
+  </section>
+
+  <section>
     <h2>The eight projects on /proof</h2>
     <p class="intro">Published figures as of 6 November 2026, with per-task ratios worked out from them. “Hours” is
     summed task time, not calendar time. The page's totals equal the sum of the rows, except cost, which is 2 cents
@@ -654,8 +703,9 @@ page = f"""<title>TAO·CODER Teardown</title>
       (<code>~/database/20261107_cntr_proof_site/</code>).</li>
       <li>/proof embedded data: 24 documents (Architecture, README, README_AI for 8 projects) from the
       <code>proof-docs-data</code> JSON block.</li>
-      <li>VS Code Marketplace package <code>thinkingos.tao-coder</code> 3.1.2 (9.6 MB VSIX; read, not run): stage tables,
-      tool specs, Task Context store, update-cycle, command classifier.</li>
+      <li>VS Code Marketplace package <code>thinkingos.tao-coder</code> 3.1.2 (9.6 MB VSIX; read, not run). Every
+      function and statement was fingerprinted and matched against Cline 3.70–4.0.12; the 2.2 MB without a match
+      (plus 0.9 MB in the UI) was read module by module.</li>
       <li>Blog posts on the release notes (3.0.1, 3.1.0), custom modes and scheduling, bounded context, JEV, MCP secrets and the
       methodology guide.</li>
     </ul>
