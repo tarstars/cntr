@@ -91,6 +91,7 @@ import {
 	StandaloneTerminalManager,
 } from "@/integrations/terminal"
 import { apiHandlerCaller } from "@/mycelium/llm/LlmCaller"
+import { resolveRoutes } from "@/mycelium/llm/routing"
 import { MyceliumTaskRuntime } from "@/mycelium/runtime/MyceliumTaskRuntime"
 import { ClineError, ClineErrorType, ErrorService } from "@/services/error"
 import { telemetryService } from "@/services/telemetry"
@@ -1880,13 +1881,26 @@ export class Task {
 		}
 		this.myceliumAttachTried = true
 		try {
+			let routes: Awaited<ReturnType<typeof resolveRoutes>> | undefined
+			let routeError: string | undefined
+			try {
+				routes = await resolveRoutes(this.cwd, this.api, (key) => this.stateManager.getRawSecret(key))
+			} catch (error) {
+				routeError = error instanceof Error ? error.message : String(error)
+			}
 			this.mycelium = await MyceliumTaskRuntime.attach({
 				cwd: this.cwd,
 				clineTaskId: this.taskId,
 				isResume: false,
-				caller: apiHandlerCaller(this.api),
+				caller: routes?.aux ?? apiHandlerCaller(this.api),
 				askOwner: (question) => this.askMyceliumOwner(question),
 			})
+			if (this.mycelium && routeError) {
+				await this.say("error", `[Mycelium] ${routeError} Using the provider configured in Cline instead.`)
+			}
+			if (this.mycelium && routes && routes.main !== this.api) {
+				this.api = routes.main
+			}
 			if (this.mycelium) {
 				this.toolExecutor.setMyceliumProvider(() => this.mycelium)
 				if (this.stateManager.getGlobalSettingsKey("mode") === "plan") {

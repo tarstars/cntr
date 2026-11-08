@@ -658,6 +658,16 @@ export class StateManager {
 		return this.globalStateCache[key]
 	}
 
+	/** Mycelium: read a secret that is not one of Cline's typed keys (e.g. myceliumElizaToken). */
+	getRawSecret(key: string): string | undefined {
+		return this.storage.secrets.get<string>(key)
+	}
+
+	/** Mycelium: store (or delete, with undefined) a secret that is not one of Cline's typed keys. */
+	setRawSecret(key: string, value: string | undefined): void {
+		this.storage.secrets.set(key, value)
+	}
+
 	/**
 	 * Get method for secret keys - reads from in-memory cache
 	 */
