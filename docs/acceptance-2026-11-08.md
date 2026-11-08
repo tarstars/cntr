@@ -18,7 +18,8 @@ need the owner's VS Code, model subscriptions and Eliza token, so they are liste
 
 1. Install: `code --install-extension ~/database/20261108_mycelium/builds/<latest>.vsix`. Expect a separate
    "Mycelium" sidebar; `~/.mycelium/data/` appears; `~/.cline` is untouched.
-2. Models: `Mycelium: Configure Eliza…` (token → SecretStorage). Write one `models.json`, e.g.
+2. Models: put the gateway settings in `~/.mycelium/.env` (see `mycelium.env.example`, `docs/models.md`), then
+   `Mycelium: Configure Eliza…` (token → SecretStorage). Write one `models.json`, e.g.
    `{"main":{"kind":"eliza","model":"anthropic/claude-sonnet-4.6"},"aux":{"kind":"eliza","model":"anthropic/claude-haiku-4.5"}}`
    or `{"main":{"kind":"cline"}}` with Cline's Claude Code provider. Record in the private Eliza notes that a turn
    with each provider answered with a tool call.

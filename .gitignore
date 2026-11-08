@@ -56,3 +56,6 @@ evals/smoke-tests/results/
 secrets.json
 tui-traces
 tests/**/cache
+
+# Mycelium: the private Eliza notes are never committed (see docs/models.md)
+docs/eliza.md

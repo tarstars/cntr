@@ -5,7 +5,7 @@ import * as vscode from "vscode"
 import { StateManager } from "@/core/storage/StateManager"
 import { cockpitHtml } from "@/mycelium/cockpit/cockpitHtml"
 import { type CockpitMessage, handleCockpitMessage } from "@/mycelium/cockpit/messages"
-import { DEFAULT_ELIZA, ELIZA_TOKEN_KEY, elizaConfigFile, loadElizaConfig } from "@/mycelium/llm/eliza"
+import { ELIZA_TOKEN_KEY, loadElizaConfig, myceliumEnvFile, saveElizaBaseUrl } from "@/mycelium/llm/eliza"
 import { aggregateWorkspace, renderSummaryHtml } from "@/mycelium/metrics/aggregate"
 import type { ModeId } from "@/mycelium/modes/pipelines"
 import { myceliumDir, nextTaskFile, profileFile } from "@/mycelium/paths"
@@ -114,10 +114,10 @@ export function registerMyceliumCommands(context: vscode.ExtensionContext): void
 			panel.webview.html = html
 		}),
 		vscode.commands.registerCommand(`${PREFIX}configureEliza`, async () => {
-			const current = await loadElizaConfig()
+			const current = await loadElizaConfig().catch(() => undefined)
 			const baseUrl = await vscode.window.showInputBox({
-				prompt: "Eliza base URL (OpenAI-compatible)",
-				value: current.baseUrl || DEFAULT_ELIZA.baseUrl,
+				prompt: `Eliza base URL (OpenAI-compatible); saved as ELIZA_BASE_URL in ${myceliumEnvFile()}`,
+				value: current?.baseUrl ?? "",
 				ignoreFocusOut: true,
 			})
 			if (!baseUrl) return
@@ -128,8 +128,7 @@ export function registerMyceliumCommands(context: vscode.ExtensionContext): void
 			})
 			if (!token) return
 			StateManager.get().setRawSecret(ELIZA_TOKEN_KEY, token.trim())
-			await fs.mkdir(path.dirname(elizaConfigFile()), { recursive: true })
-			await fs.writeFile(elizaConfigFile(), JSON.stringify({ ...current, baseUrl }, null, 2))
+			await saveElizaBaseUrl(baseUrl)
 			vscode.window.showInformationMessage(
 				'Mycelium: Eliza configured. Choose models in .mycelium/models.json (e.g. {"main":{"kind":"eliza","model":"anthropic/claude-sonnet-4.6"}}).',
 			)
