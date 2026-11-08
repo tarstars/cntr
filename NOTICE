@@ -1,0 +1,14 @@
+Mycelium
+Copyright 2026 tarstars
+
+Mycelium is a modified version of Cline (https://github.com/cline/cline),
+version 3.79.0, licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Changes made in this fork:
+- renamed the extension (id local.mycelium-coder) and moved its data to ~/.mycelium;
+- removed calls to Cline's cloud services;
+- added the Mycelium layer in src/mycelium/: task memory, stage pipeline, update-cycle,
+  stage gate, command safety, metrics, Cockpit panel, and two behaviour profiles
+  ("tao" and "improved") modelled on the published behaviour of TAO·CODER 3.1.2.
+
+No code or prompt text from TAO·CODER is included.
