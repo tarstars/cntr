@@ -15,6 +15,7 @@ import { telemetryService } from "@/services/telemetry"
 import { McpMarketplaceCatalog } from "@/shared/mcp"
 import { Logger } from "@/shared/services/Logger"
 import { syncWorker } from "@/shared/services/worker/sync"
+import { myceliumHome } from "../../mycelium/home"
 import { reconstructTaskHistory } from "../commands/reconstructTaskHistory"
 import { StateManager } from "./StateManager"
 
@@ -115,7 +116,7 @@ export async function getDocumentsPath(): Promise<string> {
  * This is intended to eventually replace ~/Documents/Cline as the global config location.
  */
 export function getClineHomePath(): string {
-	return path.join(os.homedir(), ".cline")
+	return myceliumHome()
 }
 
 export async function ensureTaskDirectoryExists(taskId: string): Promise<string> {

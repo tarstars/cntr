@@ -1,6 +1,6 @@
 import fsSync from "node:fs"
-import os from "node:os"
 import path from "node:path"
+import { myceliumHome } from "../../mycelium/home"
 import { ClineFileStorage } from "./ClineFileStorage"
 import { ClineMemento } from "./ClineStorage"
 
@@ -92,7 +92,7 @@ function hashString(str: string): string {
  * @returns A StorageContext ready for use by StateManager
  */
 export function createStorageContext(opts: StorageContextOptions = {}): StorageContext {
-	const clineDir = opts.clineDir || process.env.CLINE_DIR || path.join(os.homedir(), ".cline")
+	const clineDir = opts.clineDir || myceliumHome()
 	const dataDir = path.join(clineDir, SETTINGS_SUBFOLDER)
 
 	// Resolve workspace storage directory

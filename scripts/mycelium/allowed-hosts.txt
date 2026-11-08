@@ -1,0 +1,125 @@
+# Hosts that appear in dist/extension.js, with why each is accounted for.
+# check-hosts.mjs fails on any host missing here. Runtime traffic is checked in acceptance step 7.
+
+# --- model providers and their sign-in endpoints (contacted only when that provider is configured) ---
+accounts.google.com
+ai-gateway.vercel.sh
+aihubmix.com
+aiplatform.googleapis.com
+api.anthropic.com
+api.asksage.ai
+api.cerebras.ai
+api.deepseek.com
+api.example.com
+api.fireworks.ai
+api.groq.com
+api.hicap.ai
+api.inference.wandb.ai
+api.minimax.io
+api.minimaxi.com
+api.mistral.ai
+api.modelarts-maas.com
+api.moonshot.ai
+api.moonshot.cn
+api.openai.com
+api.openweathermap.org
+api.sambanova.ai
+api.studio.nebius.ai
+api.together.xyz
+api.x.ai
+api.z.ai
+ark.cn-beijing.volces.com
+auth.openai.com
+chat.qwen.ai
+chatgpt.com
+cloudresourcemanager.googleapis.com
+code-internal.aiservice.us-chicago-1.oci.oraclecloud.com
+code.aiservice.us-chicago-1.oci.oraclecloud.com
+cognitiveservices.azure.com
+cognitiveservices.azure.us
+cognito-identity-fips.us-east-1.amazonaws.com
+cognito-identity-fips.us-east-2.amazonaws.com
+cognito-identity-fips.us-west-1.amazonaws.com
+cognito-identity-fips.us-west-2.amazonaws.com
+cognito-identity.amazonaws.com
+dashboard.hicap.ai
+dashscope-intl.aliyuncs.com
+dashscope.aliyuncs.com
+generativelanguage.googleapis.com
+idcs-9dc693e80d9b469480d7afe00e743931.identity.oraclecloud.com
+inference-api.nousresearch.com
+inference.baseten.co
+login-ext.identity.oraclecloud.com
+login.chinacloudapi.cn
+login.microsoftonline.com
+login.microsoftonline.de
+login.microsoftonline.us
+login.partner.microsoftonline.cn
+login.windows-ppe.net
+oauth2.googleapis.com
+open.bigmodel.cn
+openrouter.ai
+router.huggingface.co
+router.requesty.ai
+sts.amazonaws.com
+www.googleapis.com
+
+# --- dormant: present as strings, not contacted by the extension ---
+cline.bot  # HTTP-Referer header value, not a connection
+data.cline.bot  # PostHog host, used only with a telemetry key (none is built in)
+docs.cline.bot  # documentation link inside a prompt (agent may web_fetch it via a tool)
+eu-assets.i.posthog.com  # PostHog SDK, inactive
+eu.i.posthog.com  # PostHog SDK default, inactive without a key
+fonts.googleapis.com  # webview font link
+googlechromelabs.github.io  # Chromium download for browser_action (agent tool)
+posthog.com  # PostHog SDK, inactive
+raw.githubusercontent.com  # MCP/skills docs links fetched only via agent tools
+sentry.io  # URL formatter string in the PostHog SDK
+storage.googleapis.com  # Chromium download for browser_action (agent tool)
+us-assets.i.posthog.com  # PostHog SDK, inactive
+us.i.posthog.com  # PostHog SDK default, inactive without a key
+us.posthog.com  # PostHog SDK, inactive
+
+# --- documentation links, schema ids and library strings (never contacted by the extension) ---
+a.co
+aka.ms
+angular.io
+archive.mozilla.org
+avatars.githubusercontent.com
+aws.amazon.com
+cloud.google.com
+docs.anthropic.com
+docs.aws.amazon.com
+docs.expo.dev
+docs.microsoft.com
+docs.mistral.ai
+example.com
+feross.org
+github.com
+goo.gl
+grpc.io
+help.openai.com
+jimmy.warting.se
+json-schema.org
+learn.microsoft.com
+opensource.org
+platform.openai.com
+pptr.dev
+product-details.mozilla.org
+purl.oclc.org
+purl.org
+react-native.canny.io
+schemas.microsoft.com
+schemas.openxmlformats.org
+schemas.zwobble.org
+sheetjs.com
+stuk.github.io
+tools.ietf.org
+vocajs.pages.dev
+www.anthropic.com
+www.apache.org
+www.gstatic.com
+www.ibm.com
+www.w3.org
+yandex.com
+yargs.js.org

@@ -16,14 +16,12 @@ describe("ClineEndpoint configuration", () => {
 		tempDir = path.join(os.tmpdir(), `config-test-${Date.now()}-${Math.random().toString(36).slice(2)}`)
 		await fs.mkdir(tempDir, { recursive: true })
 
-		// Create .cline directory
-		await fs.mkdir(path.join(tempDir, ".cline"), { recursive: true })
+		// Create .mycelium directory
+		await fs.mkdir(path.join(tempDir, ".mycelium"), { recursive: true })
 
 		// Stub os.homedir to return our temp directory
 		originalHomedir = os.homedir
-		sandbox
-			.stub(os, "homedir")
-			.returns(tempDir)
+		sandbox.stub(os, "homedir").returns(tempDir)
 
 		// Reset the singleton state using internal method
 		;(ClineEndpoint as any)._instance = null
@@ -51,7 +49,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(validConfig), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(validConfig), "utf8")
 
 			await ClineEndpoint.initialize(tempDir)
 
@@ -69,9 +67,9 @@ describe("ClineEndpoint configuration", () => {
 
 			const config = ClineEndpoint.config
 			config.environment.should.not.equal(Environment.selfHosted)
-			// Should use production defaults
-			config.appBaseUrl.should.equal("https://app.cline.bot")
-			config.apiBaseUrl.should.equal("https://api.cline.bot")
+			// Should use production defaults (Mycelium disables the cloud endpoints)
+			config.appBaseUrl.should.equal("http://127.0.0.1:9") // Mycelium: cloud disabled
+			config.apiBaseUrl.should.equal("http://127.0.0.1:9")
 		})
 
 		it("should accept URLs with ports", async () => {
@@ -81,7 +79,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "http://localhost:8080/mcp",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(validConfig), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(validConfig), "utf8")
 
 			await ClineEndpoint.initialize(tempDir)
 
@@ -98,7 +96,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://proxy.enterprise.com/cline/mcp",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(validConfig), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(validConfig), "utf8")
 
 			await ClineEndpoint.initialize(tempDir)
 
@@ -109,7 +107,7 @@ describe("ClineEndpoint configuration", () => {
 
 	describe("invalid JSON handling", () => {
 		it("should throw ClineConfigurationError for invalid JSON syntax", async () => {
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), "{ invalid json }", "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), "{ invalid json }", "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -121,7 +119,7 @@ describe("ClineEndpoint configuration", () => {
 		})
 
 		it("should throw ClineConfigurationError for truncated JSON", async () => {
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), '{"appBaseUrl": "https://test.com"', "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), '{"appBaseUrl": "https://test.com"', "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -133,7 +131,7 @@ describe("ClineEndpoint configuration", () => {
 		})
 
 		it("should throw ClineConfigurationError for empty file", async () => {
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), "", "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), "", "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -144,7 +142,7 @@ describe("ClineEndpoint configuration", () => {
 		})
 
 		it("should throw ClineConfigurationError for non-object JSON", async () => {
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), '"just a string"', "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), '"just a string"', "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -156,7 +154,7 @@ describe("ClineEndpoint configuration", () => {
 		})
 
 		it("should throw ClineConfigurationError for array JSON", async () => {
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), "[]", "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), "[]", "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -169,7 +167,7 @@ describe("ClineEndpoint configuration", () => {
 		})
 
 		it("should throw ClineConfigurationError for null JSON", async () => {
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), "null", "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), "null", "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -188,7 +186,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -205,7 +203,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -222,7 +220,7 @@ describe("ClineEndpoint configuration", () => {
 				apiBaseUrl: "https://api.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -234,7 +232,7 @@ describe("ClineEndpoint configuration", () => {
 		})
 
 		it("should throw ClineConfigurationError when all fields are missing", async () => {
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), "{}", "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), "{}", "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -252,7 +250,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -270,7 +268,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -288,7 +286,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -306,7 +304,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -326,7 +324,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -344,7 +342,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -362,7 +360,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -381,7 +379,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			try {
 				await ClineEndpoint.initialize(tempDir)
@@ -401,7 +399,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			await ClineEndpoint.initialize(tempDir)
 
@@ -424,7 +422,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			await ClineEndpoint.initialize(tempDir)
 
@@ -467,7 +465,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 
 			await ClineEndpoint.initialize(tempDir)
 
@@ -482,7 +480,7 @@ describe("ClineEndpoint configuration", () => {
 				mcpBaseUrl: "https://custom-mcp.internal/v1",
 			}
 
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(customConfig), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(customConfig), "utf8")
 
 			await ClineEndpoint.initialize(tempDir)
 
@@ -527,7 +525,7 @@ describe("ClineEndpoint configuration", () => {
 				apiBaseUrl: "https://api.enterprise.com",
 				mcpBaseUrl: "https://mcp.enterprise.com",
 			}
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(config), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(config), "utf8")
 			await ClineEndpoint.initialize(tempDir)
 
 			ClineEndpoint.isSelfHosted().should.be.true()
@@ -597,7 +595,7 @@ describe("ClineEndpoint configuration", () => {
 
 			// Set up both configs
 			await fs.writeFile(path.join(bundledDir, "endpoints.json"), JSON.stringify(bundledConfig), "utf8")
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(userConfig), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(userConfig), "utf8")
 
 			await ClineEndpoint.initialize(bundledDir)
 
@@ -616,7 +614,7 @@ describe("ClineEndpoint configuration", () => {
 			}
 
 			// Only create user config, no bundled config
-			await fs.writeFile(path.join(tempDir, ".cline", "endpoints.json"), JSON.stringify(userConfig), "utf8")
+			await fs.writeFile(path.join(tempDir, ".mycelium", "endpoints.json"), JSON.stringify(userConfig), "utf8")
 
 			await ClineEndpoint.initialize(bundledDir)
 
@@ -632,11 +630,11 @@ describe("ClineEndpoint configuration", () => {
 
 			await ClineEndpoint.initialize(bundledDir)
 
-			// Should use production defaults
+			// Should use production defaults (Mycelium disables the cloud endpoints)
 			const config = ClineEndpoint.config
 			config.environment.should.not.equal(Environment.selfHosted)
-			config.appBaseUrl.should.equal("https://app.cline.bot")
-			config.apiBaseUrl.should.equal("https://api.cline.bot")
+			config.appBaseUrl.should.equal("http://127.0.0.1:9") // Mycelium: cloud disabled
+			config.apiBaseUrl.should.equal("http://127.0.0.1:9")
 		})
 
 		it("should throw ClineConfigurationError for invalid bundled file", async () => {
