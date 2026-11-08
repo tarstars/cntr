@@ -16,6 +16,7 @@ import type { Mode } from "@shared/storage/types"
 import type { ClineDefaultTool } from "@shared/tools"
 import type { ClineAskResponse } from "@shared/WebviewMessage"
 import { WorkspaceRootManager } from "@/core/workspace"
+import type { MyceliumHooks } from "@/mycelium/runtime/types"
 import type { ContextManager } from "../../../context/context-management/ContextManager"
 import type { StateManager } from "../../../storage/StateManager"
 import type { MessageStateHandler } from "../../message-state"
@@ -64,6 +65,9 @@ export interface TaskConfig {
 
 	// Tool coordination
 	coordinator: ToolExecutorCoordinator
+
+	/** Mycelium hooks for the current task; undefined when the workspace does not use Mycelium. */
+	getMycelium?: () => MyceliumHooks | undefined
 }
 
 /**

@@ -56,6 +56,23 @@ export const toolParamNames = [
 	"prompt_5",
 	"start_line",
 	"end_line",
+	// Mycelium tool parameters
+	"to_stage",
+	"reason",
+	"evidence",
+	"back",
+	"spec",
+	"acceptance_criteria",
+	"constraints",
+	"why",
+	"tags",
+	"note_id",
+	"items",
+	"item_id",
+	"status",
+	"criteria",
+	"statuses",
+	"summary",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]

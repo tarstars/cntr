@@ -1,4 +1,5 @@
 // Import all tool variants
+import { MYCELIUM_TOOL_SPECS } from "@/mycelium/tools/specs"
 import { ClineToolSet } from "../registry/ClineToolSet"
 import { access_mcp_resource_variants } from "./access_mcp_resource"
 import { act_mode_respond_variants } from "./act_mode_respond"
@@ -55,6 +56,8 @@ export function registerClineToolSets(): void {
 		...web_search_variants,
 		...write_to_file_variants,
 		...apply_patch_variants,
+		// Mycelium memory and stage tools (generic variants; other families fall back to GENERIC)
+		...MYCELIUM_TOOL_SPECS,
 	]
 
 	// Register each variant

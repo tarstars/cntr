@@ -33,6 +33,16 @@ export enum ClineDefaultTool {
 	GENERATE_EXPLANATION = "generate_explanation",
 	USE_SKILL = "use_skill",
 	USE_SUBAGENTS = "use_subagents",
+	// Mycelium memory and stage tools (src/mycelium/tools)
+	MYC_SET_STAGE = "myc_set_stage",
+	MYC_UPDATE_TASK_SPEC = "myc_update_task_spec",
+	MYC_ADD_CODE_REF = "myc_add_code_ref",
+	MYC_ADD_NOTE = "myc_add_note",
+	MYC_ADD_NOTE_COMMENT = "myc_add_note_comment",
+	MYC_UPDATE_PLAN = "myc_update_plan",
+	MYC_UPDATE_EXIT_CRITERIA = "myc_update_exit_criteria",
+	MYC_UPDATE_ACCEPTANCE_CRITERIA = "myc_update_acceptance_criteria",
+	MYC_CREATE_HANDOFF = "myc_create_handoff",
 }
 
 // Array of all tool names for compatibility

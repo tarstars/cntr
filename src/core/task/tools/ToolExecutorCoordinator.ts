@@ -1,4 +1,5 @@
 import type { ToolUse } from "@core/assistant-message"
+import { MYCELIUM_HANDLER_FACTORIES } from "@/mycelium/tools/handlers"
 import { CLINE_MCP_TOOL_IDENTIFIER } from "@/shared/mcp"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../index"
@@ -106,6 +107,8 @@ export class ToolExecutorCoordinator {
 		[ClineDefaultTool.GENERATE_EXPLANATION]: (_v: ToolValidator) => new GenerateExplanationToolHandler(),
 		[ClineDefaultTool.USE_SKILL]: (_v: ToolValidator) => new UseSkillToolHandler(),
 		[ClineDefaultTool.USE_SUBAGENTS]: (_v: ToolValidator) => new UseSubagentsToolHandler(),
+		// Mycelium memory and stage tools
+		...MYCELIUM_HANDLER_FACTORIES,
 	}
 
 	/**
