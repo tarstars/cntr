@@ -90,6 +90,12 @@ export class AttemptCompletionHandler implements IToolHandler, IPartialBlockHand
 		// Reset so the next attempt_completion pair triggers double-check again
 		config.taskState.doubleCheckCompletionPending = false
 
+		// Mycelium: close the task's metrics and mark it done
+		await config
+			.getMycelium?.()
+			?.onTaskCompleted()
+			.catch(() => undefined)
+
 		// Run PreToolUse hook before execution
 		try {
 			const { ToolHookUtils } = await import("../utils/ToolHookUtils")

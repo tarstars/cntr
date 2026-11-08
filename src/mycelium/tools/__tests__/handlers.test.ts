@@ -46,6 +46,7 @@ describe("myc_* tool handlers", () => {
 			onCommandFinished: async () => {},
 			onToolFinished: async () => {},
 			invalidateKernel: () => {},
+			onTaskCompleted: async () => {},
 		}
 		const config = { getMycelium: () => hooks } as unknown as TaskConfig
 		const handlers = Object.fromEntries(createMyceliumHandlers().map((h) => [h.name, h]))

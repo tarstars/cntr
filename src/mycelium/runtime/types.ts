@@ -18,4 +18,6 @@ export interface MyceliumHooks {
 	onToolFinished(ms: number): Promise<void>
 	/** Memory changed in a way the cached kernel must reflect. */
 	invalidateKernel(): void
+	/** attempt_completion succeeded: close the task's metrics and mark it done. */
+	onTaskCompleted(): Promise<void>
 }

@@ -5,6 +5,8 @@ import { showApprovalNotification, showSystemNotification } from "@integrations/
 import { COMMAND_REQ_APP_STRING } from "@shared/combineCommandSequences"
 import { ClineAsk } from "@shared/ExtensionMessage"
 import { arePathsEqual } from "@utils/path"
+import { commandDecision, exitCodeFromOutput } from "@/mycelium/runtime/executorHooks"
+import { loadCommandRules } from "@/mycelium/safety/commandSafety"
 import { telemetryService } from "@/services/telemetry"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
@@ -220,11 +222,23 @@ export class ExecuteCommandToolHandler implements IFullyManagedTool {
 			)
 		}
 
-		if (
-			config.isSubagentExecution ||
-			(!requiresApprovalPerLLM && autoApproveSafe) ||
-			(requiresApprovalPerLLM && autoApproveSafe && autoApproveAll)
-		) {
+		// Mycelium: its command-safety rules decide whether to run without asking (profile-dependent)
+		const mycelium = config.getMycelium?.()
+		const clineAutoRun =
+			(!requiresApprovalPerLLM && autoApproveSafe) || (requiresApprovalPerLLM && autoApproveSafe && autoApproveAll)
+		const myceliumDecision = mycelium
+			? commandDecision(
+					mycelium,
+					actualCommand,
+					{ safe: !!autoApproveSafe, all: !!autoApproveAll },
+					await loadCommandRules(config.cwd),
+				)
+			: undefined
+		const autoRun =
+			myceliumDecision === undefined
+				? clineAutoRun
+				: myceliumDecision === "run" && (!requiresApprovalPerLLM || !!autoApproveAll)
+		if (config.isSubagentExecution || autoRun) {
 			// Auto-approve flow
 			if (!config.isSubagentExecution) {
 				await config.callbacks.removeLastPartialMessageIfExistsWithType("ask", "command")
@@ -311,6 +325,10 @@ export class ExecuteCommandToolHandler implements IFullyManagedTool {
 		}
 
 		const [userRejected, result] = await config.callbacks.executeCommandTool(finalCommand, timeoutSeconds)
+		if (!userRejected && mycelium) {
+			const output = typeof result === "string" ? result : JSON.stringify(result)
+			await mycelium.onCommandFinished(actualCommand, exitCodeFromOutput(output), output).catch(() => undefined)
+		}
 
 		if (timeoutId) {
 			clearTimeout(timeoutId)

@@ -13,6 +13,7 @@ import { ClineAsk, ClineSay } from "@shared/ExtensionMessage"
 import { ClineContent } from "@shared/messages/content"
 import { ClineDefaultTool, toolUseNames } from "@shared/tools"
 import { ClineAskResponse } from "@shared/WebviewMessage"
+import { stageCheck } from "@/mycelium/runtime/executorHooks"
 import type { MyceliumHooks } from "@/mycelium/runtime/types"
 import { isParallelToolCallingEnabled, modelDoesntSupportWebp } from "@/utils/model-utils"
 import { ToolUse } from "../assistant-message"
@@ -134,6 +135,7 @@ export class ToolExecutor {
 	// Create a properly typed TaskConfig object for handlers
 	// NOTE: modifying this object in the tool handlers is okay since these are all references to the singular ToolExecutor instance's variables. However, be careful modifying this object assuming it will update the ToolExecutor instance, e.g. config.browserSession = ... will not update the ToolExecutor.browserSession instance variable. Use applyLatestBrowserSettings() instead.
 	private myceliumProvider?: () => MyceliumHooks | undefined
+	private readonly myceliumBlockedStreaks = new Map<string, number>()
 
 	/** Mycelium: lets tool handlers and the stage check reach the task's runtime. */
 	public setMyceliumProvider(provider: () => MyceliumHooks | undefined): void {
@@ -365,6 +367,33 @@ export class ToolExecutor {
 				return true
 			}
 
+			// Mycelium: re-check the stage's tool policy (the prompt already hides blocked tools)
+			const mycelium = this.myceliumProvider?.()
+			const stagePolicy = stageCheck(mycelium, block.name, this.myceliumBlockedStreaks)
+			if (stagePolicy.blocked) {
+				if (!block.partial) {
+					this.taskState.consecutiveMistakeCount++
+					if (stagePolicy.hitMistakeLimit) {
+						this.taskState.consecutiveMistakeCount = this.stateManager.getGlobalSettingsKey("maxConsecutiveMistakes")
+					}
+					await this.say("error", stagePolicy.message ?? "Tool blocked in this stage.")
+					this.pushToolResult(formatResponse.toolError(stagePolicy.message), block)
+				}
+				return true
+			}
+			if (stagePolicy.forceApproval) {
+				config.autoApprover = {
+					...config.autoApprover,
+					shouldAutoApproveTool: () => false,
+					shouldAutoApproveToolWithPath: async () => false,
+				} as unknown as typeof config.autoApprover
+				config.callbacks = {
+					...config.callbacks,
+					shouldAutoApproveTool: () => false,
+					shouldAutoApproveToolWithPath: async () => false,
+				} as unknown as typeof config.callbacks
+			}
+
 			// Close browser for non-browser tools
 			if (block.name !== "browser_action") {
 				await this.browserSession.closeBrowser()
@@ -377,7 +406,9 @@ export class ToolExecutor {
 			}
 
 			// Handle complete blocks
+			const toolStartedAt = Date.now()
 			await this.handleCompleteBlock(block, config)
+			await mycelium?.onToolFinished(Date.now() - toolStartedAt).catch(() => undefined)
 			return true
 		} catch (error) {
 			await this.handleError(`executing ${block.name}`, error as Error, block)

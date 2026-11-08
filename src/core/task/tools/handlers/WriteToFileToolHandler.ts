@@ -10,6 +10,7 @@ import { getLastApiReqTotalTokens } from "@shared/getApiMetrics"
 import { fileExistsAtPath } from "@utils/fs"
 import { arePathsEqual, getReadablePath, isLocatedInWorkspace } from "@utils/path"
 import { applyPatch } from "diff"
+import { writeDecision } from "@/mycelium/runtime/executorHooks"
 import { telemetryService } from "@/services/telemetry"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
@@ -201,7 +202,22 @@ export class WriteToFileToolHandler implements IFullyManagedTool {
 				// : undefined,
 			} satisfies ClineSayTool)
 
-			if (await config.callbacks.shouldAutoApproveToolWithPath(block.name, relPath)) {
+			// Mycelium: large rewrites need the owner; improved refuses rewrites that lose most of the file
+			const rewrite =
+				block.name === ClineDefaultTool.FILE_NEW
+					? writeDecision(config.getMycelium?.(), {
+							existing: fileExists ? (config.services.diffViewProvider.originalContent ?? "") : undefined,
+							next: newContent,
+							autoAll: config.yoloModeToggled === true,
+						})
+					: { kind: "ok" as const }
+			if (rewrite.kind === "deny") {
+				await config.services.diffViewProvider.revertChanges()
+				await config.services.diffViewProvider.reset()
+				await config.callbacks.say("error", rewrite.message)
+				return formatResponse.toolError(rewrite.message)
+			}
+			if (rewrite.kind !== "ask" && (await config.callbacks.shouldAutoApproveToolWithPath(block.name, relPath))) {
 				// Auto-approval flow
 				await config.callbacks.removeLastPartialMessageIfExistsWithType("ask", "tool")
 				await config.callbacks.say("tool", completeMessage, undefined, undefined, false)
