@@ -54,7 +54,8 @@ export interface CheckRun {
 	started_at: string
 	duration_ms: number
 	exit_code: number | null
-	status: "passed" | "failed" | "missing" | "timeout"
+	/** "unknown": observed in a terminal that reported no exit code. */
+	status: "passed" | "failed" | "missing" | "timeout" | "unknown"
 	log_path?: string
 	source: "extension" | "agent_command"
 	command: string
