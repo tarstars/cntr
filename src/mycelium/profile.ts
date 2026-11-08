@@ -19,6 +19,8 @@ export interface Profile {
 		windowTurns: number
 		/** tao re-reads the transcript from turn 0; improved reads only unprocessed turns. */
 		fromTurnZero: boolean
+		/** After a failed cycle wait 2, 4, 8… (at most 16) requests before retrying; tao retries on every request. */
+		backoffOnFailure: boolean
 	}
 	history: { afterCycle: "truncate" | "keep"; keepMessages: number; windowMaxTokens: number }
 	notes: { dropPathMentions: boolean; resolveDeletes: boolean }
@@ -39,7 +41,13 @@ export interface Profile {
 		confirmFlagsEffective: boolean
 		leaveAuditAsksOwner: boolean
 	}
-	commands: { classifyAllSegments: boolean; interpretersSafe: boolean; autoApproveAllRunsBlacklisted: boolean }
+	commands: {
+		classifyAllSegments: boolean
+		interpretersSafe: boolean
+		autoApproveAllRunsBlacklisted: boolean
+		/** Command/process substitution → unknown; env/VAR= looked through; npx & co not safe; find -delete, forced push dangerous. */
+		strictShell: boolean
+	}
 	files: { largeRewriteLines: number; truncationGuard: boolean; truncationRatio: number }
 	aux: { countRepairOnlyWhenApplied: boolean; countMigration: boolean; announce: boolean }
 }
@@ -54,6 +62,7 @@ export const TAO_PROFILE: Profile = Object.freeze({
 		includeAssistantText: false,
 		windowTurns: 30,
 		fromTurnZero: true,
+		backoffOnFailure: false,
 	},
 	history: { afterCycle: "truncate", keepMessages: 20, windowMaxTokens: 50000 },
 	notes: { dropPathMentions: true, resolveDeletes: true },
@@ -74,7 +83,12 @@ export const TAO_PROFILE: Profile = Object.freeze({
 		confirmFlagsEffective: false,
 		leaveAuditAsksOwner: false,
 	},
-	commands: { classifyAllSegments: false, interpretersSafe: true, autoApproveAllRunsBlacklisted: true },
+	commands: {
+		classifyAllSegments: false,
+		interpretersSafe: true,
+		autoApproveAllRunsBlacklisted: true,
+		strictShell: false,
+	},
 	files: { largeRewriteLines: 300, truncationGuard: false, truncationRatio: 0.5 },
 	aux: { countRepairOnlyWhenApplied: true, countMigration: false, announce: false },
 } as Profile)
@@ -89,6 +103,7 @@ export const IMPROVED_PROFILE: Profile = Object.freeze({
 		includeAssistantText: true,
 		windowTurns: 30,
 		fromTurnZero: false,
+		backoffOnFailure: true,
 	},
 	history: { afterCycle: "keep", keepMessages: 20, windowMaxTokens: 50000 },
 	notes: { dropPathMentions: false, resolveDeletes: false },
@@ -109,7 +124,12 @@ export const IMPROVED_PROFILE: Profile = Object.freeze({
 		confirmFlagsEffective: true,
 		leaveAuditAsksOwner: true,
 	},
-	commands: { classifyAllSegments: true, interpretersSafe: false, autoApproveAllRunsBlacklisted: false },
+	commands: {
+		classifyAllSegments: true,
+		interpretersSafe: false,
+		autoApproveAllRunsBlacklisted: false,
+		strictShell: true,
+	},
 	files: { largeRewriteLines: 300, truncationGuard: true, truncationRatio: 0.5 },
 	aux: { countRepairOnlyWhenApplied: false, countMigration: true, announce: true },
 } as Profile)

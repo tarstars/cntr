@@ -96,6 +96,7 @@ Some of these may come later as separate work.
 | Area | `tao` (faithful to TAO 3.1.2 design) | `improved` |
 |---|---|---|
 | Update-cycle trigger | every 5 user-role API messages (each tool result counts) | every N real user/assistant exchanges or when history tokens pass a threshold (builder picks defaults, configurable) |
+| Update-cycle failure | retried on every request | retried after 2, 4, 8… (at most 16) requests; a success resets it (`updateCycle.backoffOnFailure`) |
 | Extractor input | tool calls and results only; assistant prose/reasoning dropped; turns 0..30 | includes assistant text and reasoning summaries; only turns not yet processed |
 | History after a cycle | stored API history cut to last 20 messages, nothing archived | full history archived to disk; prompt uses a window; nothing deleted |
 | Note sanitising | notes mentioning a file path are dropped; `resolve_note` deletes | path mentions allowed; resolve marks notes resolved, never deletes |
@@ -106,7 +107,7 @@ Some of these may come later as separate work.
 | Gate on exit criteria | blocks only on criteria explicitly `false`; flags self-reported | every criterion must be `true`; `check_all_passed` can be set **only** by the extension after it runs `check_all.sh` itself and gets exit code 0 |
 | Evidence ids | validated only in the object form | always validated |
 | "Needs confirmation" flags | present but inert (as in TAO) | really ask the owner; stage changes out of audit ask the owner |
-| Command safety | TAO's order; whitelist on first segment; `bash/python/node/npx` safe; auto-approve-all runs blacklisted commands except `rm`, `git checkout --` | every segment classified; interpreters are not auto-safe; blacklisted commands always ask |
+| Command safety | TAO's order; whitelist on first segment; `bash/python/node/npx` safe; auto-approve-all runs blacklisted commands except `rm`, `git checkout --` | every segment classified (a lone `&` separates); interpreters and package runners (`npx`, `npm exec`, `pnpm dlx`…) are not auto-safe; `$(…)`, backticks and `<(…)` make a command unknown; `env`/`VAR=` prefixes are looked through; `find -delete` and forced pushes are dangerous; blacklisted commands always ask (`commands.strictShell`) |
 | Large-file rewrite | approval prompt over 300 lines unless auto-approve | same prompt, plus the 50 % truncation guard on by default |
 | Duration metric | time inside LLM calls (TAO's definition) | recorded as both model time and wall-clock task time (both profiles record both; `tao` *reports* the TAO one on its summary) |
 

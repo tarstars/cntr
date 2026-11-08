@@ -4,6 +4,7 @@ import os from "os"
 import path from "path"
 import { HostProvider } from "@/hosts/host-provider"
 import { resolveExistingHookPath, VALID_HOOK_TYPES } from "../../hooks/utils"
+import { GLOBAL_DOCS_FOLDER } from "../../storage/disk"
 import { Controller } from ".."
 
 export async function refreshHooks(
@@ -11,7 +12,7 @@ export async function refreshHooks(
 	_request?: any,
 	globalHooksDirOverride?: string,
 ): Promise<HooksToggles> {
-	const globalHooksDir = globalHooksDirOverride || path.join(os.homedir(), "Documents", "Cline", "Hooks")
+	const globalHooksDir = globalHooksDirOverride || path.join(os.homedir(), "Documents", GLOBAL_DOCS_FOLDER, "Hooks")
 	const isWindows = process.platform === "win32"
 
 	// Collect global hooks

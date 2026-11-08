@@ -5,7 +5,11 @@ import { checkRunsDir } from "../paths"
 import type { CheckRun } from "../store/schema"
 
 const DEFAULT_TIMEOUT_MS = 900_000
-const KILL_GRACE_MS = 5_000
+const KILL_GRACE_MS = 1_000
+/** How long to keep reading output after the script exits before closing the pipes. */
+const EXIT_GRACE_MS = 300
+/** Keep at most the last 1 M characters of output. */
+const MAX_LOG_CHARS = 1_000_000
 const SECRET_ENV = /TOKEN|KEY|SECRET|PASSWORD/i
 
 /** Workspace-relative places check_all.sh is looked for, in order. */
@@ -64,13 +68,12 @@ export async function runCheckAll(cwd: string, opts: { timeoutMs?: number; env?:
 	const command = `bash ${rel}`
 	const child = spawn("bash", [rel], { cwd, env, detached: true, stdio: ["ignore", "pipe", "pipe"] })
 	let output = ""
-	child.stdout.on("data", (d) => {
+	const collect = (d: Buffer) => {
 		output += d
-	})
-	child.stderr.on("data", (d) => {
-		output += d
-	})
-	let timedOut = false
+		if (output.length > MAX_LOG_CHARS) output = output.slice(output.length - MAX_LOG_CHARS)
+	}
+	child.stdout.on("data", collect)
+	child.stderr.on("data", collect)
 	const killGroup = (signal: NodeJS.Signals) => {
 		try {
 			if (child.pid) process.kill(-child.pid, signal)
@@ -78,16 +81,40 @@ export async function runCheckAll(cwd: string, opts: { timeoutMs?: number; env?:
 			// already gone
 		}
 	}
-	const timer = setTimeout(() => {
-		timedOut = true
-		killGroup("SIGTERM")
-		setTimeout(() => killGroup("SIGKILL"), KILL_GRACE_MS).unref()
-	}, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS)
+	let timedOut = false
+	// Settle on the script's own exit (not on stdio close: a background child may hold the pipes open),
+	// and in any case by the hard deadline, so a stray or detached child can never hang the gate.
 	const exitCode: number | null = await new Promise((resolve) => {
-		child.on("close", (code) => resolve(code))
-		child.on("error", () => resolve(null))
+		let settled = false
+		const settle = (code: number | null) => {
+			if (settled) return
+			settled = true
+			clearTimeout(timer)
+			clearTimeout(deadline)
+			setTimeout(() => {
+				child.stdout.destroy()
+				child.stderr.destroy()
+			}, EXIT_GRACE_MS).unref()
+			resolve(code)
+		}
+		const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
+		const timer = setTimeout(() => {
+			timedOut = true
+			killGroup("SIGTERM")
+			setTimeout(() => killGroup("SIGKILL"), KILL_GRACE_MS).unref()
+		}, timeoutMs)
+		const deadline = setTimeout(
+			() => {
+				timedOut = true
+				killGroup("SIGKILL")
+				settle(null)
+			},
+			timeoutMs + KILL_GRACE_MS + EXIT_GRACE_MS,
+		)
+		child.on("close", (code) => settle(code))
+		child.on("exit", (code) => setTimeout(() => settle(code), EXIT_GRACE_MS))
+		child.on("error", () => settle(null))
 	})
-	clearTimeout(timer)
 	const log_path = await saveLog(cwd, startedAt, maskSecrets(output, env))
 	return {
 		started_at: startedAt.toISOString(),

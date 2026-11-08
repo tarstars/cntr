@@ -32,6 +32,22 @@ const BLACKLIST: readonly RegExp[] = [
 	/\bgit\s+clean\s+-[a-z]*f/,
 ]
 
+/** Extra blacklist for strict profiles: deletes and history rewrites TAO's list misses. */
+const STRICT_BLACKLIST: readonly RegExp[] = [
+	/\bfind\b[^;&|\n]*\s-delete\b/,
+	/\bgit\s+push\b[^;&|\n]*\s(--force\b|--force-with-lease\b|-[A-Za-z]*f[A-Za-z]*\b|\+\S)/,
+]
+
+/** Programs that download or run arbitrary package code; in strict profiles they count as interpreters. */
+const PACKAGE_RUNNERS = new Set(["npx", "bunx"])
+const PACKAGE_RUNNER_SUBCOMMANDS: Record<string, readonly string[]> = {
+	npm: ["exec", "x"],
+	pnpm: ["dlx", "exec"],
+	yarn: ["dlx"],
+	bun: ["x"],
+}
+const FIND_EXEC = /\s-(exec|execdir|ok|okdir|fprint|fprintf|fls)\b/
+
 /** Always ask, whatever auto-approve says (TAO's behaviour in both profiles). */
 const ALWAYS_ASK: readonly RegExp[] = [/\brm\b/, /\bgit\s+checkout\s+(\S+\s+)?--\s/]
 
@@ -120,7 +136,7 @@ const SAFE_GIT = new Set([
 ])
 const SAFE_DOCKER = new Set(["build", "ps", "logs", "exec", "images"])
 
-/** Split a shell command on unquoted `;`, `&&`, `||`, `|` and newlines. */
+/** Split a shell command on unquoted `;`, `&&`, `||`, `|`, a lone `&` and newlines. */
 export function splitSegments(command: string): string[] {
 	const out: string[] = []
 	let cur = ""
@@ -144,6 +160,12 @@ export function splitSegments(command: string): string[] {
 			i++
 			continue
 		}
+		// A lone & runs the left side in the background; `2>&1`, `>&2` and `&>` are redirections.
+		if (ch === "&" && command[i - 1] !== ">" && command[i - 1] !== "<" && command[i + 1] !== ">") {
+			out.push(cur)
+			cur = ""
+			continue
+		}
 		if (ch === ";" || ch === "|" || ch === "\n") {
 			out.push(cur)
 			cur = ""
@@ -165,10 +187,56 @@ function globToRegExp(glob: string): RegExp {
 }
 const anyGlob = (globs: string[], text: string) => globs.some((g) => globToRegExp(g).test(text))
 
+/** True when the command runs a command or process substitution outside single quotes. */
+export function hasSubstitution(command: string): boolean {
+	let quote: string | null = null
+	for (let i = 0; i < command.length; i++) {
+		const ch = command[i]
+		if (quote === "'") {
+			if (ch === "'") quote = null
+			continue
+		}
+		if (ch === "\\") {
+			i++
+			continue
+		}
+		if (ch === "`" || (ch === "$" && command[i + 1] === "(")) return true
+		if (quote === '"') {
+			if (ch === '"') quote = null
+			continue
+		}
+		if (ch === "'" || ch === '"') quote = ch
+		else if ((ch === "<" || ch === ">") && command[i + 1] === "(") return true
+	}
+	return false
+}
+
+/** Strict reading of a segment's words: drop leading VAR=value and an `env` wrapper; undefined = unclear. */
+function strictWords(segment: string): string[] | undefined {
+	const words = segment.split(/\s+/).filter(Boolean)
+	let i = 0
+	while (i < words.length && /^\w+=/.test(words[i])) i++
+	if (words[i] === "env") {
+		i++
+		while (i < words.length && (/^\w+=/.test(words[i]) || ["-i", "-", "--ignore-environment", "-0"].includes(words[i]))) i++
+		if (words[i]?.startsWith("-")) return undefined
+		if (i >= words.length) return ["env"]
+	}
+	return words.slice(i)
+}
+
 function builtinSafe(segment: string, profile: Profile): boolean {
-	const words = segment.split(/\s+/).filter((w) => !/^\w+=/.test(w))
+	const strict = profile.commands.strictShell
+	const words = strict ? strictWords(segment) : segment.split(/\s+/).filter((w) => !/^\w+=/.test(w))
+	if (!words) return false
 	const [program, sub] = words
 	if (!program) return false
+	if (strict) {
+		const runnerSubs = PACKAGE_RUNNER_SUBCOMMANDS[program]
+		if (PACKAGE_RUNNERS.has(program) || (runnerSubs && runnerSubs.includes(sub ?? "")))
+			return profile.commands.interpretersSafe
+		if (program === "find" && FIND_EXEC.test(segment)) return false
+	}
 	if (program === "git") return SAFE_GIT.has(sub ?? "")
 	if (program === "docker") return SAFE_DOCKER.has(sub ?? "")
 	if (program === "chmod") return sub === "+x"
@@ -177,14 +245,17 @@ function builtinSafe(segment: string, profile: Profile): boolean {
 }
 
 /**
- * Classify a command. Order: user blacklist → built-in blacklist → user require_approval → user
- * whitelist → built-in whitelist → unknown. Blacklists see the whole command; whitelists see the first
- * segment (tao) or every segment (improved).
+ * Classify a command. Order: user blacklist → built-in blacklist (+ strict blacklist) → user
+ * require_approval → (strict: substitution → unknown) → user whitelist → built-in whitelist → unknown.
+ * Blacklists see the whole command; whitelists see the first segment (tao) or every segment (improved).
  */
 export function classifyCommand(command: string, rules: CommandRules, profile: Profile): CommandClass {
 	const cmd = command.trim().replace(/[ \t]+/g, " ")
+	const strict = profile.commands.strictShell
 	if (anyGlob(rules.blacklist, cmd) || BLACKLIST.some((re) => re.test(cmd))) return "dangerous"
+	if (strict && STRICT_BLACKLIST.some((re) => re.test(cmd))) return "dangerous"
 	if (anyGlob(rules.require_approval, cmd)) return "requires_approval"
+	if (strict && hasSubstitution(cmd)) return "unknown"
 	const segments = splitSegments(cmd)
 	const checked = profile.commands.classifyAllSegments ? segments : segments.slice(0, 1)
 	const safe = checked.length > 0 && checked.every((s) => anyGlob(rules.whitelist, s) || builtinSafe(s, profile))

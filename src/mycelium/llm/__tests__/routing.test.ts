@@ -76,4 +76,29 @@ describe("model routing", () => {
 		;[a.mainModelId, a.auxModelId].should.eql([b.mainModelId, b.auxModelId])
 		await fs.rm(other, { recursive: true, force: true })
 	})
+
+	it("an Eliza main route reports Cline's OpenAI-compatible provider id; the Cline route reports none", async () => {
+		;(await resolveRoutes(cwd, clineApi, () => undefined)).should.have.property("mainProviderId", undefined)
+		await writeModels(cwd, { main: { kind: "eliza", model: "anthropic/claude-sonnet-4.6" } })
+		const r = await resolveRoutes(cwd, clineApi, () => "tok", { eliza: DEFAULT_ELIZA })
+		r.mainProviderId!.should.equal("openai")
+	})
+
+	it("aux on the Cline route follows Cline's current handler after a settings change", async () => {
+		await writeModels(cwd, { main: { kind: "eliza", model: "openai/gpt-5.2" }, aux: { kind: "cline" } })
+		let current = clineApi
+		const r = await resolveRoutes(
+			cwd,
+			() => current,
+			() => "tok",
+			{ eliza: DEFAULT_ELIZA },
+		)
+		current = {
+			getModel: () => ({ id: "anthropic/claude-haiku", info: {} }),
+			async *createMessage() {
+				yield { type: "text", text: "from the new provider" }
+			},
+		} as unknown as ApiHandler
+		;(await r.aux.call("s", "u")).text.should.equal("from the new provider")
+	})
 })

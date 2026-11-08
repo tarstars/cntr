@@ -19,7 +19,7 @@ import { evaluateToolPolicy, type ToolPolicyResult } from "../modes/toolPolicy"
 import { myceliumDir, nextTaskFile } from "../paths"
 import { getProfile, type Profile, type ProfileId, readWorkspaceSettings } from "../profile"
 import type { CallType, TaskContext } from "../store/schema"
-import { TaskContextStore } from "../store/TaskContextStore"
+import { ContextCorruptError, TaskContextStore } from "../store/TaskContextStore"
 import type { MyceliumHooks } from "./types"
 
 const MODES = Object.keys(PIPELINES) as ModeId[]
@@ -68,6 +68,10 @@ function userTexts(history: ClineStorageMessage[], n: number): string[] {
 export class MyceliumTaskRuntime implements MyceliumHooks {
 	readonly store: TaskContextStore
 	private ctx: TaskContext
+	/** Shrinks after each context-window overflow (1 → ½ → ¼ → ⅛); scales the window and kernel budgets. */
+	private budgetScale = 1
+	/** The owner declined to reset a broken memory file; do not ask again in this session. */
+	private resetDeclined = false
 
 	private constructor(
 		readonly cwd: string,
@@ -93,13 +97,22 @@ export class MyceliumTaskRuntime implements MyceliumHooks {
 		askOwner: (question: string) => Promise<boolean>
 	}): Promise<MyceliumTaskRuntime | undefined> {
 		const { cwd, clineTaskId } = args
-		const hasPending = await exists(nextTaskFile(cwd))
+		// next_task.json describes the next *new* task; a resumed task never consumes it.
+		const hasPending = !args.isResume && (await exists(nextTaskFile(cwd)))
 		if (!hasPending && !(await exists(myceliumDir(cwd)))) return undefined
 
 		const store = new TaskContextStore(cwd)
 		const settings = await readWorkspaceSettings(cwd)
 		const notices = settings.warning ? [settings.warning] : []
-		let ctx = await store.findByClineTask(clineTaskId)
+		let ctx: TaskContext | undefined
+		try {
+			ctx = await store.findByClineTask(clineTaskId)
+		} catch (error) {
+			if (!(error instanceof ContextCorruptError)) throw error
+			if (!(await args.askOwner(resetQuestion(error)))) throw error
+			ctx = await store.recover(error.taskId)
+			notices.push(resetNotice(error))
+		}
 		if (!ctx) {
 			let pending: { mode?: unknown; profile?: unknown } = {}
 			if (hasPending) {
@@ -150,6 +163,29 @@ export class MyceliumTaskRuntime implements MyceliumHooks {
 		kernelCache.invalidate(this.taskId)
 	}
 
+	/** The model reported a context-window overflow: send less on the retry. */
+	shrinkBudgets(): void {
+		this.budgetScale = Math.max(0.125, this.budgetScale / 2)
+		this.invalidateKernel()
+	}
+
+	/** The profile with budgets scaled down after overflows; a shrunk kernel always budgets its feed. */
+	private effectiveProfile(): Profile {
+		if (this.budgetScale === 1) return this.profile
+		const s = this.budgetScale
+		const p = this.profile
+		return {
+			...p,
+			history: { ...p.history, windowMaxTokens: Math.floor(p.history.windowMaxTokens * s) },
+			kernel: {
+				...p.kernel,
+				feedBudgeted: true,
+				hotBudgetTokens: Math.floor(p.kernel.hotBudgetTokens * s),
+				maxSnippets: Math.max(5, Math.floor(p.kernel.maxSnippets * s)),
+			},
+		}
+	}
+
 	private announce(notices: string[], text: string): void {
 		if (this.profile.aux.announce) notices.push(text)
 	}
@@ -157,6 +193,25 @@ export class MyceliumTaskRuntime implements MyceliumHooks {
 	private async record(type: CallType, result: LlmResult | undefined, counted: boolean): Promise<void> {
 		if (!result) return
 		this.ctx = await this.store.update(this.taskId, (c) => recordCall(c, { type, stage: c.stage, result, counted }))
+	}
+
+	/**
+	 * The memory file broke during the task (e.g. a hand edit): ask the owner once whether to reset it.
+	 * Declined (now or earlier) → ContextCorruptError, and the file is left alone.
+	 */
+	private async ensureReadableContext(): Promise<void> {
+		try {
+			await this.store.load(this.taskId)
+		} catch (error) {
+			if (!(error instanceof ContextCorruptError)) throw error
+			if (this.resetDeclined || !(await this.askOwner(resetQuestion(error)))) {
+				this.resetDeclined = true
+				throw error
+			}
+			this.ctx = await this.store.recover(this.taskId)
+			this.invalidateKernel()
+			this.startupNotices.push(resetNotice(error))
+		}
 	}
 
 	/**
@@ -168,6 +223,7 @@ export class MyceliumTaskRuntime implements MyceliumHooks {
 		replaceStoredHistory?: ClineStorageMessage[]
 		notices: string[]
 	}> {
+		await this.ensureReadableContext()
 		const notices = this.startupNotices.splice(0)
 		this.ctx = await this.store.update(this.taskId, (c) => {
 			c.update_cycle.turn_counter += 1
@@ -238,7 +294,7 @@ export class MyceliumTaskRuntime implements MyceliumHooks {
 		const kernel = await this.kernel()
 		const tail = this.profile.kernel.planInKernel ? undefined : this.tail()
 		return {
-			messages: buildRequestMessages({ history: working, kernel, tail, profile: this.profile }),
+			messages: buildRequestMessages({ history: working, kernel, tail, profile: this.effectiveProfile() }),
 			replaceStoredHistory,
 			notices,
 		}
@@ -259,12 +315,13 @@ export class MyceliumTaskRuntime implements MyceliumHooks {
 				]),
 			)
 			.digest("hex")
-		if (this.profile.kernel.cacheBetweenCycles) {
+		const profile = this.effectiveProfile()
+		if (profile.kernel.cacheBetweenCycles) {
 			const cached = kernelCache.get(this.taskId, key)
 			if (cached) return cached
 		}
-		const refs = selectSnippetRefs(c.refs, this.profile)
-		const snippets = await Promise.all(refs.map((r) => readSnippet(this.cwd, r, this.profile.kernel.maxSnippetLines)))
+		const refs = selectSnippetRefs(c.refs, profile)
+		const snippets = await Promise.all(refs.map((r) => readSnippet(this.cwd, r, profile.kernel.maxSnippetLines)))
 		const others = (await this.store.listTasks()).filter((t) => t.task_id !== c.task_id && t.status === "done")
 		const recentTasks = others
 			.sort((a, b) => b.updated_at.localeCompare(a.updated_at))
@@ -278,7 +335,7 @@ export class MyceliumTaskRuntime implements MyceliumHooks {
 				snippets,
 				systemInfo: `OS: ${os.platform()} · shell: ${process.env.SHELL ?? "unknown"} · workspace: ${this.cwd}`,
 			},
-			this.profile,
+			profile,
 		)
 		kernelCache.set(this.taskId, key, text)
 		return text
@@ -312,3 +369,36 @@ export class MyceliumTaskRuntime implements MyceliumHooks {
 		})
 	}
 }
+
+/**
+ * Task's entry point: the runtime's request, or undefined (after telling the owner why) so the request
+ * runs as plain Cline — a broken memory file or a Mycelium bug must not stop the task.
+ */
+export async function prepareRequestOrFallback(
+	rt: Pick<MyceliumTaskRuntime, "beforeRequest">,
+	history: ClineStorageMessage[],
+	report: (message: string) => Promise<void>,
+): Promise<Awaited<ReturnType<MyceliumTaskRuntime["beforeRequest"]>> | undefined> {
+	try {
+		return await rt.beforeRequest(history)
+	} catch (error) {
+		const why =
+			error instanceof ContextCorruptError
+				? `The memory file ${error.file} cannot be used (${error.reason}). Fix it by hand, or reopen the task to reset it.`
+				: `Preparing the request failed: ${error instanceof Error ? error.message : String(error)}.`
+		await report(`[Mycelium] ${why} This request runs without Mycelium memory.`)
+		return undefined
+	}
+}
+
+function resetQuestion(error: ContextCorruptError): string {
+	return (
+		`The memory file for this task cannot be used: ${error.file} (${error.reason}). ` +
+		"Approve to keep the broken file aside and start this task's memory fresh (spec, plan and notes start empty; " +
+		"older copies are in the task's snapshots/ folder). Reject to leave the file as it is and fix it by hand; " +
+		"until then requests run without Mycelium memory."
+	)
+}
+
+const resetNotice = (error: ContextCorruptError) =>
+	`Mycelium memory was reset because ${error.file} could not be used (${error.reason}); the broken file is kept beside it.`

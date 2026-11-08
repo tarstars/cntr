@@ -3,6 +3,7 @@ import os from "os"
 import path from "path"
 import { HostProvider } from "@/hosts/host-provider"
 import { getCwd, getDesktopDir } from "@/utils/path"
+import { GLOBAL_DOCS_FOLDER } from "../storage/disk"
 
 /**
  * All valid hook types that can be created and executed by Cline.
@@ -51,7 +52,7 @@ export async function resolveHooksDirectory(
 	globalHooksDirOverride?: string,
 ): Promise<string> {
 	if (isGlobal) {
-		return globalHooksDirOverride || path.join(os.homedir(), "Documents", "Cline", "Hooks")
+		return globalHooksDirOverride || path.join(os.homedir(), "Documents", GLOBAL_DOCS_FOLDER, "Hooks")
 	}
 
 	// For workspace hooks, find the correct workspace

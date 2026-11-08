@@ -56,6 +56,7 @@ describe("Mycelium profiles", () => {
 				includeAssistantText: false,
 				windowTurns: 30,
 				fromTurnZero: true,
+				backoffOnFailure: false,
 			},
 			history: { afterCycle: "truncate", keepMessages: 20, windowMaxTokens: 50000 },
 			notes: { dropPathMentions: true, resolveDeletes: true },
@@ -76,7 +77,12 @@ describe("Mycelium profiles", () => {
 				confirmFlagsEffective: false,
 				leaveAuditAsksOwner: false,
 			},
-			commands: { classifyAllSegments: false, interpretersSafe: true, autoApproveAllRunsBlacklisted: true },
+			commands: {
+				classifyAllSegments: false,
+				interpretersSafe: true,
+				autoApproveAllRunsBlacklisted: true,
+				strictShell: false,
+			},
 			files: { largeRewriteLines: 300, truncationGuard: false, truncationRatio: 0.5 },
 			aux: { countRepairOnlyWhenApplied: true, countMigration: false, announce: false },
 		})
@@ -89,6 +95,7 @@ describe("Mycelium profiles", () => {
 				includeAssistantText: true,
 				windowTurns: 30,
 				fromTurnZero: false,
+				backoffOnFailure: true,
 			},
 			history: { afterCycle: "keep", keepMessages: 20, windowMaxTokens: 50000 },
 			notes: { dropPathMentions: false, resolveDeletes: false },
@@ -109,7 +116,12 @@ describe("Mycelium profiles", () => {
 				confirmFlagsEffective: true,
 				leaveAuditAsksOwner: true,
 			},
-			commands: { classifyAllSegments: true, interpretersSafe: false, autoApproveAllRunsBlacklisted: false },
+			commands: {
+				classifyAllSegments: true,
+				interpretersSafe: false,
+				autoApproveAllRunsBlacklisted: false,
+				strictShell: true,
+			},
 			files: { largeRewriteLines: 300, truncationGuard: true, truncationRatio: 0.5 },
 			aux: { countRepairOnlyWhenApplied: false, countMigration: true, announce: true },
 		})

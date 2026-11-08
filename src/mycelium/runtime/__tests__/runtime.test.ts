@@ -2,12 +2,13 @@ import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, it } from "mocha"
-import "should"
+import should from "should"
 import type { ClineStorageMessage } from "@/shared/messages/content"
 import type { LlmCaller } from "../../llm/LlmCaller"
-import { myceliumDir, nextTaskFile, profileFile } from "../../paths"
-import { TaskContextStore } from "../../store/TaskContextStore"
-import { MyceliumTaskRuntime } from "../MyceliumTaskRuntime"
+import { myceliumDir, nextTaskFile, profileFile, taskDir } from "../../paths"
+import { EXTRACTOR_SYSTEM_PROMPT } from "../../prompts/extractorPrompt"
+import { ContextCorruptError, TaskContextStore } from "../../store/TaskContextStore"
+import { MyceliumTaskRuntime, prepareRequestOrFallback } from "../MyceliumTaskRuntime"
 
 const user = (text: string): ClineStorageMessage => ({ role: "user", content: [{ type: "text", text }] })
 const tool = (i: number): ClineStorageMessage[] => [
@@ -65,6 +66,23 @@ describe("MyceliumTaskRuntime", () => {
 				() => "gone",
 			)
 			.should.be.fulfilledWith("gone")
+	})
+
+	it("a resumed task with no context leaves next_task.json for the next new task", async () => {
+		await useProfile("improved")
+		await fs.writeFile(nextTaskFile(cwd), JSON.stringify({ mode: "architect" }))
+		const resumed = (await MyceliumTaskRuntime.attach({
+			cwd,
+			clineTaskId: "old",
+			isResume: true,
+			caller: okCaller(),
+			askOwner: async () => true,
+		}))!
+		resumed.mode().should.equal("developer")
+		;(await fs.stat(nextTaskFile(cwd))).isFile().should.be.true()
+		const fresh = (await attach("new"))!
+		fresh.mode().should.equal("architect")
+		await fs.stat(nextTaskFile(cwd)).should.be.rejected()
 	})
 
 	it("uses defaultMode from profile.json, else developer", async () => {
@@ -145,5 +163,164 @@ describe("MyceliumTaskRuntime", () => {
 		await useProfile("tao")
 		const tao = (await attach("t", failingCaller))!
 		;(await tao.beforeRequest(conversation(5))).notices.should.eql([])
+	})
+})
+
+describe("MyceliumTaskRuntime — context overflow", () => {
+	let cwd: string
+	beforeEach(async () => {
+		cwd = await fs.mkdtemp(path.join(os.tmpdir(), "myc-rt-shrink-"))
+	})
+	afterEach(async () => {
+		await fs.rm(cwd, { recursive: true, force: true })
+	})
+
+	for (const profile of ["tao", "improved"] as const) {
+		it(`shrinkBudgets makes the next request smaller (${profile})`, async () => {
+			await fs.mkdir(myceliumDir(cwd), { recursive: true })
+			await fs.writeFile(profileFile(cwd), JSON.stringify({ profile }))
+			const rt = (await MyceliumTaskRuntime.attach({
+				cwd,
+				clineTaskId: "c",
+				isResume: false,
+				caller: okCaller("{}"),
+				askOwner: async () => true,
+			}))!
+			await new TaskContextStore(cwd).update(rt.taskId, (c) => {
+				for (let i = 0; i < 400; i++)
+					c.notes.push({
+						id: `n${i}`,
+						text: `finding ${i} `.repeat(30),
+						tags: ["info"],
+						at_turn: i,
+						hidden: false,
+						resolved: false,
+						comments: [],
+					})
+			})
+			const long = [
+				user("go"),
+				...Array.from({ length: 60 }, (_, i) => [
+					{
+						role: "assistant" as const,
+						content: [{ type: "tool_use" as const, id: `t${i}`, name: "read_file", input: { path: "a.ts" } }],
+					},
+					{
+						role: "user" as const,
+						content: [{ type: "tool_result" as const, tool_use_id: `t${i}`, content: "line\n".repeat(2000) }],
+					},
+				]).flat(),
+			] as ClineStorageMessage[]
+			const before = JSON.stringify((await rt.beforeRequest(long)).messages).length
+			rt.shrinkBudgets()
+			const after = JSON.stringify((await rt.beforeRequest(long)).messages).length
+			after.should.be.below(before * 0.75)
+		})
+	}
+})
+
+describe("MyceliumTaskRuntime — update-cycle backoff", () => {
+	let cwd: string
+	beforeEach(async () => {
+		cwd = await fs.mkdtemp(path.join(os.tmpdir(), "myc-rt-backoff-"))
+	})
+	afterEach(async () => {
+		await fs.rm(cwd, { recursive: true, force: true })
+	})
+
+	for (const [profile, expected] of [
+		["improved", 3],
+		["tao", 8],
+	] as const) {
+		it(`a down auxiliary model is called ${expected} times in 8 requests (${profile})`, async () => {
+			await fs.mkdir(myceliumDir(cwd), { recursive: true })
+			await fs.writeFile(profileFile(cwd), JSON.stringify({ profile }))
+			let extractorCalls = 0
+			const caller: LlmCaller = {
+				async call(system) {
+					if (system === EXTRACTOR_SYSTEM_PROMPT) extractorCalls++
+					throw new Error("provider down")
+				},
+			}
+			const rt = (await MyceliumTaskRuntime.attach({
+				cwd,
+				clineTaskId: "c",
+				isResume: false,
+				caller,
+				askOwner: async () => true,
+			}))!
+			for (let i = 0; i < 8; i++) await rt.beforeRequest(conversation(5))
+			extractorCalls.should.equal(expected)
+		})
+	}
+})
+
+describe("MyceliumTaskRuntime — broken memory file", () => {
+	let cwd: string
+	beforeEach(async () => {
+		cwd = await fs.mkdtemp(path.join(os.tmpdir(), "myc-rt-corrupt-"))
+		await fs.mkdir(myceliumDir(cwd), { recursive: true })
+		await fs.writeFile(profileFile(cwd), JSON.stringify({ profile: "improved" }))
+	})
+	afterEach(async () => {
+		await fs.rm(cwd, { recursive: true, force: true })
+	})
+	const ctxFile = (taskId: string) => path.join(taskDir(cwd, taskId), "task_context.json")
+	const attachWith = (askOwner: (q: string) => Promise<boolean>, isResume = true) =>
+		MyceliumTaskRuntime.attach({ cwd, clineTaskId: "c", isResume, caller: okCaller("{}"), askOwner })
+
+	it("on resume, asks the owner; approve keeps the broken file aside and starts fresh memory", async () => {
+		const first = (await attachWith(async () => true, false))!
+		await fs.writeFile(ctxFile(first.taskId), "{")
+		const questions: string[] = []
+		const rt = (await attachWith(async (q) => {
+			questions.push(q)
+			return true
+		}))!
+		questions.length.should.equal(1)
+		questions[0].should.containEql("task_context.json")
+		rt.taskId.should.equal(first.taskId)
+		const r = await rt.beforeRequest(conversation(1))
+		r.notices.join("\n").should.match(/memory .*reset/i)
+		;(await fs.readdir(taskDir(cwd, first.taskId))).some((f) => f.startsWith("task_context.corrupt.")).should.be.true()
+	})
+
+	it("on resume, owner declines: attach fails with ContextCorruptError and the file is untouched", async () => {
+		const first = (await attachWith(async () => true, false))!
+		await fs.writeFile(ctxFile(first.taskId), "{")
+		await attachWith(async () => false).should.be.rejectedWith(ContextCorruptError)
+		;(await fs.readFile(ctxFile(first.taskId), "utf8")).should.equal("{")
+	})
+
+	it("broken mid-task: asks once; declined → each request fails with ContextCorruptError, file untouched; fixed → works again", async () => {
+		let asked = 0
+		const rt = (await attachWith(async () => {
+			asked++
+			return false
+		}, false))!
+		const good = await fs.readFile(ctxFile(rt.taskId), "utf8")
+		await fs.writeFile(ctxFile(rt.taskId), "{")
+		await rt.beforeRequest(conversation(1)).should.be.rejectedWith(ContextCorruptError)
+		await rt.beforeRequest(conversation(1)).should.be.rejectedWith(ContextCorruptError)
+		asked.should.equal(1)
+		;(await fs.readFile(ctxFile(rt.taskId), "utf8")).should.equal("{")
+		await fs.writeFile(ctxFile(rt.taskId), good)
+		;(await rt.beforeRequest(conversation(1))).messages.length.should.be.above(0)
+	})
+
+	it("prepareRequestOrFallback reports the problem and returns undefined so the request runs as plain Cline", async () => {
+		const reported: string[] = []
+		const failing = {
+			beforeRequest: async () => {
+				throw new ContextCorruptError("corrupt", "/w/.mycelium/tasks/t/task_context.json", "Unexpected end of JSON input")
+			},
+		}
+		const r = await prepareRequestOrFallback(failing, [], async (m) => {
+			reported.push(m)
+		})
+		should(r).be.undefined()
+		reported.length.should.equal(1)
+		reported[0].should.containEql("task_context.json")
+		reported[0].should.match(/without Mycelium/)
 	})
 })

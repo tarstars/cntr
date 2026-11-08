@@ -91,8 +91,10 @@ import {
 	StandaloneTerminalManager,
 } from "@/integrations/terminal"
 import { apiHandlerCaller } from "@/mycelium/llm/LlmCaller"
+import { MainApiSlot } from "@/mycelium/llm/mainApiSlot"
 import { resolveRoutes } from "@/mycelium/llm/routing"
-import { MyceliumTaskRuntime } from "@/mycelium/runtime/MyceliumTaskRuntime"
+import { MyceliumTaskRuntime, prepareRequestOrFallback } from "@/mycelium/runtime/MyceliumTaskRuntime"
+import { ContextCorruptError } from "@/mycelium/store/TaskContextStore"
 import { ClineError, ClineErrorType, ErrorService } from "@/services/error"
 import { telemetryService } from "@/services/telemetry"
 import { ClineClient } from "@/shared/cline"
@@ -218,7 +220,14 @@ export class Task {
 	private mcpHub: McpHub
 
 	// Service handlers
-	api: ApiHandler
+	// Mycelium: Cline's handler plus an optional models.json route (Eliza) that survives Cline replacing it
+	private readonly mainApiSlot = new MainApiSlot()
+	get api(): ApiHandler {
+		return this.mainApiSlot.current
+	}
+	set api(api: ApiHandler) {
+		this.mainApiSlot.setCline(api)
+	}
 	terminalManager: ITerminalManager
 	private urlContentFetcher: UrlContentFetcher
 	browserSession: BrowserSession
@@ -233,6 +242,8 @@ export class Task {
 	// Mycelium: per-task memory/stage runtime (undefined when the workspace does not use Mycelium)
 	private mycelium?: MyceliumTaskRuntime
 	private myceliumAttachTried = false
+	/** Set when the task was resumed from history; a resumed task never consumes .mycelium/next_task.json. */
+	private myceliumIsResume = false
 	private myceliumRequestStartedAt = 0
 	/**
 	 * Whether the task is using native tool calls.
@@ -367,6 +378,7 @@ export class Task {
 
 		// Initialize taskId first
 		if (historyItem) {
+			this.myceliumIsResume = true
 			this.ulid = historyItem.ulid ?? ulid()
 			this.taskIsFavorited = historyItem.isFavorited
 			this.taskState.conversationHistoryDeletedRange = historyItem.conversationHistoryDeletedRange
@@ -1748,7 +1760,9 @@ export class Task {
 		const model = this.api.getModel()
 		const apiConfig = this.stateManager.getApiConfiguration()
 		const mode = this.stateManager.getGlobalSettingsKey("mode")
-		const providerId = (mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider) as string
+		const providerId = this.mainApiSlot.providerId(
+			(mode === "plan" ? apiConfig.planModeApiProvider : apiConfig.actModeApiProvider) as string,
+		)
 		const customPrompt = this.stateManager.getGlobalSettingsKey("customPrompt")
 		return { model, providerId, customPrompt, mode }
 	}
@@ -1807,6 +1821,12 @@ export class Task {
 	}
 
 	private async handleContextWindowExceededError(): Promise<void> {
+		// Mycelium builds its own request (kernel + window): shrink its budgets instead of Cline's truncation
+		if (this.mycelium) {
+			this.mycelium.shrinkBudgets()
+			await this.say("info", "[Mycelium] The model's context window was exceeded; the retry sends less memory and history.")
+			return
+		}
 		const apiConversationHistory = this.messageStateHandler.getApiConversationHistory()
 
 		// Run PreCompact hook before truncation
@@ -1884,22 +1904,26 @@ export class Task {
 			let routes: Awaited<ReturnType<typeof resolveRoutes>> | undefined
 			let routeError: string | undefined
 			try {
-				routes = await resolveRoutes(this.cwd, this.api, (key) => this.stateManager.getRawSecret(key))
+				routes = await resolveRoutes(
+					this.cwd,
+					() => this.mainApiSlot.cline,
+					(key) => this.stateManager.getRawSecret(key),
+				)
 			} catch (error) {
 				routeError = error instanceof Error ? error.message : String(error)
 			}
 			this.mycelium = await MyceliumTaskRuntime.attach({
 				cwd: this.cwd,
 				clineTaskId: this.taskId,
-				isResume: false,
+				isResume: this.myceliumIsResume,
 				caller: routes?.aux ?? apiHandlerCaller(this.api),
 				askOwner: (question) => this.askMyceliumOwner(question),
 			})
 			if (this.mycelium && routeError) {
 				await this.say("error", `[Mycelium] ${routeError} Using the provider configured in Cline instead.`)
 			}
-			if (this.mycelium && routes && routes.main !== this.api) {
-				this.api = routes.main
+			if (this.mycelium && routes?.mainProviderId) {
+				this.mainApiSlot.override(routes.main, routes.mainProviderId)
 			}
 			if (this.mycelium) {
 				this.toolExecutor.setMyceliumProvider(() => this.mycelium)
@@ -1909,6 +1933,12 @@ export class Task {
 			}
 		} catch (error) {
 			Logger.error("[Mycelium] failed to attach to the task:", error)
+			if (error instanceof ContextCorruptError) {
+				await this.say(
+					"error",
+					`[Mycelium] The memory file ${error.file} cannot be used (${error.reason}). This task runs without Mycelium; fix the file and reopen the task to bring Mycelium back.`,
+				)
+			}
 		}
 		return this.mycelium
 	}
@@ -2067,8 +2097,14 @@ export class Task {
 		this.useNativeToolCalls = !!tools?.length
 		await this.writePromptMetadataArtifacts({ systemPrompt, providerInfo })
 
-		// Mycelium replaces Cline's context truncation with its own kernel + history window.
-		const contextManagementMetadata = mycelium
+		// Mycelium replaces Cline's context truncation with its own kernel + history window. If Mycelium cannot
+		// prepare this request (e.g. its memory file is broken), the owner is told and the request runs as plain Cline.
+		const prepared = mycelium
+			? await prepareRequestOrFallback(mycelium, this.messageStateHandler.getApiConversationHistory(), (text) =>
+					this.say("error", text).then(() => undefined),
+				)
+			: undefined
+		const contextManagementMetadata = prepared
 			? undefined
 			: await this.contextManager.getNewContextMessagesAndMetadata(
 					this.messageStateHandler.getApiConversationHistory(),
@@ -2088,8 +2124,7 @@ export class Task {
 
 		// Response API requires native tool calls to be enabled
 		let requestMessages = contextManagementMetadata?.truncatedConversationHistory ?? []
-		if (mycelium) {
-			const prepared = await mycelium.beforeRequest(this.messageStateHandler.getApiConversationHistory())
+		if (prepared) {
 			if (prepared.replaceStoredHistory) {
 				await this.messageStateHandler.overwriteApiConversationHistory(prepared.replaceStoredHistory)
 			}

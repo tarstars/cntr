@@ -34,6 +34,9 @@ export async function loadElizaConfig(): Promise<ElizaConfig> {
 }
 
 /** An OpenAI-compatible handler pointed at Eliza; the token goes only into the request header. */
+/** Eliza is driven through Cline's OpenAI-compatible handler, whose provider id is "openai". */
+export const ELIZA_PROVIDER_ID = "openai"
+
 export function buildElizaHandler(cfg: ElizaConfig, model: string, token: string): ApiHandler {
 	return new OpenAiHandler({
 		openAiBaseUrl: cfg.baseUrl,

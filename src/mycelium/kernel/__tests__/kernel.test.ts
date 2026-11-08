@@ -190,3 +190,10 @@ describe("kernel renderer", () => {
 		})
 	})
 })
+
+describe("token estimate — review fixes", () => {
+	it("counts non-ASCII text (e.g. Russian) at about 2 characters per token", () => {
+		estimateTokens("абвгдежз").should.equal(4)
+		estimateTokens("abcd" + "аб").should.equal(2)
+	})
+})

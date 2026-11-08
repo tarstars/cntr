@@ -106,7 +106,15 @@ export interface TaskContext {
 	changes: { id: string; summary: string; diff_path?: string; at_turn: number }[]
 	user_notes: string[]
 	execution_log: { at: string; kind: string; detail: string }[]
-	update_cycle: { processed_until: number; turn_counter: number; pending_force: boolean }
+	update_cycle: {
+		processed_until: number
+		turn_counter: number
+		pending_force: boolean
+		/** Consecutive failed update-cycles (profiles with updateCycle.backoffOnFailure). */
+		failures?: number
+		/** No update-cycle before this turn after a failure. */
+		retry_at_turn?: number
+	}
 	repair: { pending_since_turn?: number }
 	migration: { ingested_at?: string }
 	metrics: TaskMetrics

@@ -7,10 +7,10 @@ need the owner's VS Code, model subscriptions and Eliza token, so they are liste
 
 | Check | Result |
 |---|---|
-| `npm run test:mycelium` | 149 passing |
-| `npm run test:unit` (Cline's suite + Mycelium) | 1 536 passing, 4 pending, 0 failing |
+| `npm run test:mycelium` | 183 passing (after the final-review fix pass) |
+| `npm run test:unit` (Cline's suite + Mycelium) | 1 570 passing, 4 pending, 0 failing |
 | `npm run package:vsix` | `~/database/20261108_mycelium/builds/mycelium-3.79.0-<sha>.vsix` (~14.4 MB) |
-| `node scripts/mycelium/check-hosts.mjs dist/extension.js` | OK — every host in the bundle is a model provider or a documented dormant string |
+| `node scripts/mycelium/check-hosts.mjs dist/extension.js` | OK (118 hosts, all accounted for) — every host in the bundle is a model provider or a documented dormant string |
 | Install into an isolated VS Code profile | `local.mycelium-coder@3.79.0` installs next to other extensions (Task 2) |
 | Headless scenario, both profiles (`src/mycelium/__tests__/scenario.test.ts`) | a Developer task goes clarification → data_collection → development → audit → report through the real runtime, store, gate and myc_* tools; update-cycle runs; agent calls are recorded; `improved` runs check_all.sh itself (2 passed runs) and asks the owner once when leaving audit; `tao` runs none and asks nothing |
 

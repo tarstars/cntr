@@ -74,3 +74,15 @@ describe("request builder", () => {
 		msgs[0].role.should.equal("user")
 	})
 })
+
+describe("request builder — review fixes", () => {
+	it("keeps the newest message even when it alone exceeds the window (truncated)", () => {
+		const huge = "x".repeat(400_000)
+		const history: ClineStorageMessage[] = [user("start"), assistantTool("t1"), toolResult("t1", huge)]
+		const msgs = buildRequestMessages({ history, kernel: "K", profile: withWindow(IMPROVED_PROFILE, 3000) })
+		const last = JSON.stringify(msgs[msgs.length - 1])
+		last.should.containEql("truncated")
+		last.length.should.be.below(3000 * 4 + 2000)
+		last.should.containEql("xxxxxxxx") // the newest tool result is present (merged after the kernel)
+	})
+})

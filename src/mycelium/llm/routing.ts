@@ -1,7 +1,7 @@
 import fs from "node:fs/promises"
 import type { ApiHandler } from "@/core/api"
 import { modelsFile } from "../paths"
-import { buildElizaHandler, ELIZA_TOKEN_KEY, type ElizaConfig, loadElizaConfig } from "./eliza"
+import { buildElizaHandler, ELIZA_PROVIDER_ID, ELIZA_TOKEN_KEY, type ElizaConfig, loadElizaConfig } from "./eliza"
 import { apiHandlerCaller, type LlmCaller } from "./LlmCaller"
 
 /** Where a role's model calls go: the provider configured in Cline, or Eliza with a given model id. */
@@ -30,10 +30,14 @@ async function readModels(cwd: string): Promise<ModelsFile> {
  */
 export async function resolveRoutes(
 	cwd: string,
-	clineApi: ApiHandler,
+	clineApiOrGetter: ApiHandler | (() => ApiHandler),
 	readSecret: (key: string) => string | undefined,
 	opts: { eliza?: ElizaConfig } = {},
-): Promise<{ main: ApiHandler; aux: LlmCaller; mainModelId: string; auxModelId: string }> {
+): Promise<{ main: ApiHandler; mainProviderId?: string; aux: LlmCaller; mainModelId: string; auxModelId: string }> {
+	const currentCline = typeof clineApiOrGetter === "function" ? clineApiOrGetter : () => clineApiOrGetter
+	const clineApi = currentCline()
+	// The aux route to Cline's provider follows Cline's current handler (a settings change replaces it).
+	const liveCline = { createMessage: (...args) => currentCline().createMessage(...args) } as Pick<ApiHandler, "createMessage">
 	const file = await readModels(cwd)
 	const mainSpec: RouteSpec = isRoute(file.main) ? file.main : { kind: "cline" }
 	const auxSpec: RouteSpec = isRoute(file.aux) ? file.aux : mainSpec
@@ -49,5 +53,11 @@ export async function resolveRoutes(
 	}
 	const main = await build(mainSpec)
 	const auxApi = auxSpec === mainSpec ? main : await build(auxSpec)
-	return { main, aux: apiHandlerCaller(auxApi), mainModelId: main.getModel().id, auxModelId: auxApi.getModel().id }
+	return {
+		main,
+		mainProviderId: mainSpec.kind === "eliza" ? ELIZA_PROVIDER_ID : undefined,
+		aux: apiHandlerCaller(auxSpec.kind === "cline" ? liveCline : auxApi),
+		mainModelId: main.getModel().id,
+		auxModelId: auxApi.getModel().id,
+	}
 }

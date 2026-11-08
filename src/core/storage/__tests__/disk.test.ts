@@ -209,6 +209,8 @@ describe("disk - hooks functionality", () => {
 			await fs.mkdir(runtimeHooksDir, { recursive: true })
 
 			sandbox.stub(os, "homedir").returns(tempDir)
+			// Not linux: getDocumentsPath() then uses the stubbed homedir instead of xdg-user-dir's real ~/Documents
+			sandbox.stub(process, "platform").value("darwin")
 			sandbox.stub(StateManager, "get").returns({
 				getGlobalStateKey: () => [],
 			} as any)
@@ -225,6 +227,8 @@ describe("disk - hooks functionality", () => {
 			const runtimeHooksDir = path.join(tempDir, "missing-runtime-hooks")
 
 			sandbox.stub(os, "homedir").returns(tempDir)
+			// Not linux: getDocumentsPath() then uses the stubbed homedir instead of xdg-user-dir's real ~/Documents
+			sandbox.stub(process, "platform").value("darwin")
 			sandbox.stub(StateManager, "get").returns({
 				getGlobalStateKey: () => [],
 			} as any)

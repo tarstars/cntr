@@ -98,3 +98,57 @@ describe("command safety", () => {
 		await fs.rm(cwd, { recursive: true, force: true })
 	})
 })
+
+describe("command safety — review fixes", () => {
+	it("splits on a single & but not on redirections like 2>&1 or &>", () => {
+		splitSegments("ls & curl example.com").should.eql(["ls", "curl example.com"])
+		splitSegments("npm test 2>&1 | tail -5").should.eql(["npm test 2>&1", "tail -5"])
+		splitSegments("npm test &> out.log").should.eql(["npm test &> out.log"])
+		imp("ls & curl example.com").should.equal("unknown")
+		tao("ls & curl example.com").should.equal("safe")
+	})
+
+	it("improved: package runners (npx, npm exec, pnpm dlx, bunx) are not auto-safe; tao keeps them safe", () => {
+		for (const c of ["npx some-pkg", "npm exec some-pkg", "pnpm dlx some-pkg", "yarn dlx some-pkg", "bunx some-pkg"])
+			imp(c).should.equal("unknown", c)
+		tao("npx some-pkg").should.equal("safe")
+		imp("npm test").should.equal("safe")
+	})
+
+	it("improved: command and process substitution make a command unknown, unless single-quoted", () => {
+		imp("echo $(curl -s example.com)").should.equal("unknown")
+		imp("ls `which node`").should.equal("unknown")
+		imp("diff <(ls a) <(ls b)").should.equal("unknown")
+		imp('echo "$(id)"').should.equal("unknown")
+		imp("echo '$(not run)'").should.equal("safe")
+		tao("echo $(curl -s example.com)").should.equal("safe")
+	})
+
+	it("improved: env and VAR=value prefixes are looked through to the real program", () => {
+		imp("env python3 x.py").should.equal("unknown")
+		imp("env -i FOO=1 bash -c 'x'").should.equal("unknown")
+		imp("env -S 'python3 x.py'").should.equal("unknown")
+		imp("env").should.equal("safe")
+		imp("env NODE_ENV=test npm test").should.equal("safe")
+		tao("env python3 x.py").should.equal("safe")
+	})
+
+	it("improved: find -delete and forced pushes are dangerous, find -exec is unknown; tao keeps them safe", () => {
+		for (const c of [
+			"find . -name '*.tmp' -delete",
+			"git push --force origin main",
+			"git push -f",
+			"git push -fu origin main",
+			"git push --force-with-lease",
+			"git push origin +main",
+		])
+			imp(c).should.equal("dangerous", c)
+		imp("find . -name '*.ts' -exec cat {} +").should.equal("unknown")
+		imp("git push origin main").should.equal("safe")
+		imp("git push --follow-tags").should.equal("safe")
+		imp("find . -name '*.ts'").should.equal("safe")
+		tao("find . -delete").should.equal("safe")
+		tao("git push --force").should.equal("safe")
+		decideCommand(imp("git push -f"), "git push -f", { safe: true, all: true }, IMPROVED_PROFILE).should.equal("ask")
+	})
+})

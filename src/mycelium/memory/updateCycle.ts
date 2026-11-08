@@ -20,6 +20,8 @@ export type ExtractorDelta = {
 }
 
 const MAX_INPUT_CHARS = 60_000
+/** Longest wait, in requests, between retries of a failing update-cycle. */
+const MAX_BACKOFF_TURNS = 16
 const NOTE_TAGS: ReadonlySet<NoteTag> = new Set(["hypothesis", "decision", "negative_knowledge", "info", "user_message"])
 const PLAN_STATUSES: ReadonlySet<string> = new Set(["todo", "next", "in_progress", "done"])
 const PATH_MENTION = /[/\\][\w.-]+\.\w{1,6}/
@@ -32,6 +34,8 @@ const newId = (p: string) => `${p}_${randomBytes(4).toString("hex")}`
 
 /** Whether an update-cycle is due before the next request. */
 export function shouldRunUpdateCycle(history: ClineStorageMessage[], ctx: TaskContext, profile: Profile): boolean {
+	const retryAt = ctx.update_cycle.retry_at_turn
+	if (profile.updateCycle.backoffOnFailure && retryAt !== undefined && ctx.update_cycle.turn_counter < retryAt) return false
 	const cursor = ctx.update_cycle.processed_until
 	if (ctx.update_cycle.pending_force) return true
 	if (cursor > history.length) return history.length > 0
@@ -230,15 +234,25 @@ export async function runUpdateCycle(deps: {
 }): Promise<{ ran: boolean; applied: boolean; result?: LlmResult; error?: string }> {
 	const { store, taskId, history, caller, profile, cwd } = deps
 	const ctx = await store.load(taskId)
+	const failed = async (error: string, result?: LlmResult) => {
+		if (profile.updateCycle.backoffOnFailure) {
+			await store.update(taskId, (c) => {
+				const failures = (c.update_cycle.failures ?? 0) + 1
+				c.update_cycle.failures = failures
+				c.update_cycle.retry_at_turn = c.update_cycle.turn_counter + Math.min(2 ** failures, MAX_BACKOFF_TURNS)
+			})
+		}
+		return { ran: true, applied: false, result, error }
+	}
 	let result: LlmResult
 	try {
 		result = await caller.call(EXTRACTOR_SYSTEM_PROMPT, buildExtractorInput(history, ctx, profile))
 	} catch (error) {
-		return { ran: true, applied: false, error: `update-cycle call failed: ${error instanceof Error ? error.message : error}` }
+		return failed(`update-cycle call failed: ${error instanceof Error ? error.message : error}`)
 	}
 	const parsed = parseExtractorOutput(result.text)
 	if ("error" in parsed) {
-		return { ran: true, applied: false, result, error: parsed.error }
+		return failed(parsed.error, result)
 	}
 	await anchorRefs(cwd, parsed)
 	await store.snapshot(taskId, "update_cycle")
@@ -246,6 +260,8 @@ export async function runUpdateCycle(deps: {
 		const merged = applyExtractorDelta(c, parsed, profile, c.update_cycle.turn_counter)
 		merged.update_cycle.processed_until = history.length
 		merged.update_cycle.pending_force = false
+		delete merged.update_cycle.failures
+		delete merged.update_cycle.retry_at_turn
 		return merged
 	})
 	await appendAudit(cwd, taskId, "update_cycle_applied", {

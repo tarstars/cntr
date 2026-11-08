@@ -6,7 +6,14 @@ import { KERNEL_ALGORITHM, KERNEL_HEADER, KERNEL_LEGEND } from "../prompts/kerne
 import type { TaskContext } from "../store/schema"
 import type { Snippet } from "./snippets"
 
-export const estimateTokens = (text: string): number => Math.ceil(text.length / 4)
+/** Token estimate: ~4 ASCII characters per token, ~2 for other scripts (Cyrillic, CJK, …). */
+export function estimateTokens(text: string): number {
+	let nonAscii = 0
+	for (let i = 0; i < text.length; i++) {
+		if (text.charCodeAt(i) > 127) nonAscii++
+	}
+	return Math.ceil((text.length - nonAscii) / 4 + nonAscii / 2)
+}
 
 export interface KernelInputs {
 	readmeAi?: string

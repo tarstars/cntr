@@ -6,9 +6,10 @@ import fs from "fs/promises"
 import os from "os"
 import * as path from "path"
 import { z } from "zod"
+import { GLOBAL_DOCS_FOLDER } from "@/core/storage/disk"
 import { buildSubagentToolName } from "./SubagentToolName"
 
-/** Default Directory for agent configurations: ~/Documents/Cline/Agents */
+/** Default Directory for agent configurations: ~/Documents/Mycelium/Agents */
 export const AGENTS_CONFIG_DIRECTORY_NAME = "Agents"
 const SUBAGENT_DYNAMIC_TOOL_NAMESPACE = "subagent"
 
@@ -103,7 +104,7 @@ export function parseAgentConfigFromYaml(content: string): AgentBaseConfig {
 }
 
 export function getAgentsConfigPath(homeDir = os.homedir()): string {
-	return path.join(homeDir, "Documents", "Cline", AGENTS_CONFIG_DIRECTORY_NAME)
+	return path.join(homeDir, "Documents", GLOBAL_DOCS_FOLDER, AGENTS_CONFIG_DIRECTORY_NAME)
 }
 
 function normalizeAgentName(name: string): string {

@@ -2,7 +2,7 @@ import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import { afterEach, beforeEach, describe, it } from "mocha"
-import "should"
+import should from "should"
 import type { ClineStorageMessage } from "@/shared/messages/content"
 import type { LlmCaller } from "../../llm/LlmCaller"
 import { taskDir } from "../../paths"
@@ -178,5 +178,45 @@ describe("update-cycle", () => {
 			.split("\n")
 			.map((l) => JSON.parse(l).event)
 		events.indexOf("snapshot").should.be.below(events.indexOf("update_cycle_applied"))
+	})
+
+	it("improved backs off after a failure (2, 4, 8… turns, at most 16) and a success clears it", async () => {
+		const ctx = await store.create({ clineTaskId: "c", mode: "developer", profile: "improved" })
+		const id = ctx.task_id
+		const h = conversation(5)
+		const run = (text: string) =>
+			runUpdateCycle({ store, taskId: id, history: h, caller: fakeCaller(text), profile: IMPROVED_PROFILE, cwd })
+		await store.update(id, (c) => {
+			c.update_cycle.turn_counter = 10
+		})
+		;(await run("oops")).applied.should.be.false()
+		let c = await store.load(id)
+		c.update_cycle.retry_at_turn!.should.equal(12)
+		shouldRunUpdateCycle(h, c, IMPROVED_PROFILE).should.be.false()
+		c = await store.update(id, (x) => {
+			x.update_cycle.turn_counter = 12
+			x.update_cycle.pending_force = true
+		})
+		shouldRunUpdateCycle(h, c, IMPROVED_PROFILE).should.be.true()
+		await run("oops")
+		;(await store.load(id)).update_cycle.retry_at_turn!.should.equal(16)
+		await store.update(id, (x) => {
+			x.update_cycle.failures = 9
+		})
+		await run("oops")
+		;(await store.load(id)).update_cycle.retry_at_turn!.should.equal(12 + 16)
+		;(await run("{}")).applied.should.be.true()
+		c = await store.load(id)
+		;(c.update_cycle.failures ?? 0).should.equal(0)
+		should(c.update_cycle.retry_at_turn).be.undefined()
+	})
+
+	it("tao never backs off: a failed update-cycle is retried on the next request", async () => {
+		const ctx = await store.create({ clineTaskId: "c", mode: "developer", profile: "tao" })
+		const h = conversation(5)
+		await runUpdateCycle({ store, taskId: ctx.task_id, history: h, caller: fakeCaller("oops"), profile: TAO_PROFILE, cwd })
+		const c = await store.load(ctx.task_id)
+		should(c.update_cycle.retry_at_turn).be.undefined()
+		shouldRunUpdateCycle(h, c, TAO_PROFILE).should.be.true()
 	})
 })

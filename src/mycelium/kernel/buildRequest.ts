@@ -44,7 +44,26 @@ function alternate(messages: ClineStorageMessage[]): ClineStorageMessage[] {
 	return out
 }
 
-/** The newest messages that fit in `maxTokens`, starting at a user message. */
+/** Cut a message's text and tool results so the whole message fits in about `maxTokens`. */
+function truncateMessage(m: ClineStorageMessage, maxTokens: number): ClineStorageMessage {
+	const budget = Math.max(1000, maxTokens * 2)
+	const cut = (s: string) =>
+		s.length > budget ? `${s.slice(0, budget)}\n[truncated: ${s.length - budget} more characters]` : s
+	const fixed = blocks(m).map((b) => {
+		if (b.type === "text" && typeof b.text === "string") return { ...b, text: cut(b.text) }
+		if (b.type === "tool_result") {
+			const text = typeof b.content === "string" ? b.content : JSON.stringify(b.content ?? "")
+			return { ...b, content: cut(text) }
+		}
+		return b
+	})
+	return { ...m, content: fixed as ClineStorageMessage["content"] }
+}
+
+/**
+ * The newest messages that fit in `maxTokens`, starting at a user message. The newest message is always
+ * kept (truncated when it alone is too big), so the model sees the result it asked for.
+ */
 function window(history: ClineStorageMessage[], maxTokens: number): ClineStorageMessage[] {
 	let used = 0
 	let start = history.length
@@ -53,6 +72,9 @@ function window(history: ClineStorageMessage[], maxTokens: number): ClineStorage
 		start--
 	}
 	while (start < history.length && history[start].role !== "user") start++
+	if (start >= history.length && history.length > 0) {
+		return [truncateMessage(history[history.length - 1], maxTokens)]
+	}
 	return history.slice(start)
 }
 

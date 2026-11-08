@@ -81,3 +81,30 @@ describe("check_all runner", () => {
 		;(await recordObservedRun(cwd, "bash check_all.sh", undefined, "")).status.should.equal("unknown")
 	})
 })
+
+describe("check_all runner — review fixes", () => {
+	let cwd: string
+	beforeEach(async () => {
+		cwd = await fs.mkdtemp(path.join(os.tmpdir(), "myc-check2-"))
+	})
+	afterEach(async () => {
+		await fs.rm(cwd, { recursive: true, force: true })
+	})
+	const script = (body: string) => fs.writeFile(path.join(cwd, "check_all.sh"), `#!/usr/bin/env bash\n${body}\n`)
+
+	it("returns promptly when the script exits but leaves a background child holding stdout", async () => {
+		await script("(sleep 20) &\necho started\nexit 0")
+		const t0 = Date.now()
+		const run = await runCheckAll(cwd, { timeoutMs: 15000 })
+		;(Date.now() - t0).should.be.below(4000)
+		run.status.should.equal("passed")
+	})
+
+	it("a detached child that escapes the process group cannot hang the gate past the deadline", async () => {
+		await script("setsid sleep 20 &\nsleep 20")
+		const t0 = Date.now()
+		const run = await runCheckAll(cwd, { timeoutMs: 300 })
+		run.status.should.equal("timeout")
+		;(Date.now() - t0).should.be.below(4000)
+	})
+})
