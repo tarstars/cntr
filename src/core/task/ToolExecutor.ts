@@ -13,6 +13,7 @@ import { ClineAsk, ClineSay } from "@shared/ExtensionMessage"
 import { ClineContent } from "@shared/messages/content"
 import { ClineDefaultTool, toolUseNames } from "@shared/tools"
 import { ClineAskResponse } from "@shared/WebviewMessage"
+import type { MyceliumHooks } from "@/mycelium/runtime/types"
 import { isParallelToolCallingEnabled, modelDoesntSupportWebp } from "@/utils/model-utils"
 import { ToolUse } from "../assistant-message"
 import { ContextManager } from "../context/context-management/ContextManager"
@@ -132,6 +133,13 @@ export class ToolExecutor {
 
 	// Create a properly typed TaskConfig object for handlers
 	// NOTE: modifying this object in the tool handlers is okay since these are all references to the singular ToolExecutor instance's variables. However, be careful modifying this object assuming it will update the ToolExecutor instance, e.g. config.browserSession = ... will not update the ToolExecutor.browserSession instance variable. Use applyLatestBrowserSettings() instead.
+	private myceliumProvider?: () => MyceliumHooks | undefined
+
+	/** Mycelium: lets tool handlers and the stage check reach the task's runtime. */
+	public setMyceliumProvider(provider: () => MyceliumHooks | undefined): void {
+		this.myceliumProvider = provider
+	}
+
 	private asToolConfig(): TaskConfig {
 		const config: TaskConfig = {
 			taskId: this.taskId,
@@ -188,6 +196,7 @@ export class ToolExecutor {
 				runUserPromptSubmitHook: this.runUserPromptSubmitHook,
 			},
 			coordinator: this.coordinator,
+			getMycelium: () => this.myceliumProvider?.(),
 		}
 
 		// Validate the config at runtime to catch any missing properties

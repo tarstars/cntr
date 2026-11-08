@@ -90,6 +90,8 @@ import {
 	FullCommandExecutorConfig,
 	StandaloneTerminalManager,
 } from "@/integrations/terminal"
+import { apiHandlerCaller } from "@/mycelium/llm/LlmCaller"
+import { MyceliumTaskRuntime } from "@/mycelium/runtime/MyceliumTaskRuntime"
 import { ClineError, ClineErrorType, ErrorService } from "@/services/error"
 import { telemetryService } from "@/services/telemetry"
 import { ClineClient } from "@/shared/cline"
@@ -226,6 +228,11 @@ export class Task {
 	private clineIgnoreController: ClineIgnoreController
 	private commandPermissionController: CommandPermissionController
 	private toolExecutor: ToolExecutor
+
+	// Mycelium: per-task memory/stage runtime (undefined when the workspace does not use Mycelium)
+	private mycelium?: MyceliumTaskRuntime
+	private myceliumAttachTried = false
+	private myceliumRequestStartedAt = 0
 	/**
 	 * Whether the task is using native tool calls.
 	 * This is used to determine how we would format response.
@@ -1862,7 +1869,46 @@ export class Task {
 		this.taskState.didAutomaticallyRetryFailedApiRequest = true
 	}
 
+	getMycelium(): MyceliumTaskRuntime | undefined {
+		return this.mycelium
+	}
+
+	/** Attach the Mycelium runtime once per task (no-op for workspaces without .mycelium/). */
+	private async ensureMycelium(): Promise<MyceliumTaskRuntime | undefined> {
+		if (this.myceliumAttachTried) {
+			return this.mycelium
+		}
+		this.myceliumAttachTried = true
+		try {
+			this.mycelium = await MyceliumTaskRuntime.attach({
+				cwd: this.cwd,
+				clineTaskId: this.taskId,
+				isResume: false,
+				caller: apiHandlerCaller(this.api),
+				askOwner: (question) => this.askMyceliumOwner(question),
+			})
+			if (this.mycelium) {
+				this.toolExecutor.setMyceliumProvider(() => this.mycelium)
+				if (this.stateManager.getGlobalSettingsKey("mode") === "plan") {
+					await this.switchToActModeCallback()
+				}
+			}
+		} catch (error) {
+			Logger.error("[Mycelium] failed to attach to the task:", error)
+		}
+		return this.mycelium
+	}
+
+	private async askMyceliumOwner(question: string): Promise<boolean> {
+		const { response, text } = await this.ask(
+			"followup",
+			JSON.stringify({ question: `[Mycelium] ${question}`, options: ["Approve", "Reject"] }),
+		)
+		return response === "yesButtonClicked" || text === "Approve"
+	}
+
 	async *attemptApiRequest(previousApiReqIndex: number): ApiStream {
+		const mycelium = await this.ensureMycelium()
 		// Wait for MCP servers to be connected before generating system prompt
 		await pWaitFor(() => this.mcpHub.isConnecting !== true, {
 			timeout: 10_000,
@@ -1993,6 +2039,8 @@ export class Task {
 				this.stateManager.getGlobalStateKey("nativeToolCallEnabled"),
 			enableParallelToolCalling: this.isParallelToolCallingEnabled(),
 			terminalExecutionMode: this.terminalExecutionMode,
+			toolFilter: mycelium?.toolFilter(),
+			extraToolIds: mycelium?.myceliumToolIds(),
 		}
 
 		// Notify user if any conditional rules were applied for this request
@@ -2005,24 +2053,39 @@ export class Task {
 		this.useNativeToolCalls = !!tools?.length
 		await this.writePromptMetadataArtifacts({ systemPrompt, providerInfo })
 
-		const contextManagementMetadata = await this.contextManager.getNewContextMessagesAndMetadata(
-			this.messageStateHandler.getApiConversationHistory(),
-			this.messageStateHandler.getClineMessages(),
-			this.api,
-			this.taskState.conversationHistoryDeletedRange,
-			previousApiReqIndex,
-			await ensureTaskDirectoryExists(this.taskId),
-			this.stateManager.getGlobalSettingsKey("useAutoCondense") && isNextGenModelFamily(this.api.getModel().id),
-		)
+		// Mycelium replaces Cline's context truncation with its own kernel + history window.
+		const contextManagementMetadata = mycelium
+			? undefined
+			: await this.contextManager.getNewContextMessagesAndMetadata(
+					this.messageStateHandler.getApiConversationHistory(),
+					this.messageStateHandler.getClineMessages(),
+					this.api,
+					this.taskState.conversationHistoryDeletedRange,
+					previousApiReqIndex,
+					await ensureTaskDirectoryExists(this.taskId),
+					this.stateManager.getGlobalSettingsKey("useAutoCondense") && isNextGenModelFamily(this.api.getModel().id),
+				)
 
-		if (contextManagementMetadata.updatedConversationHistoryDeletedRange) {
+		if (contextManagementMetadata?.updatedConversationHistoryDeletedRange) {
 			this.taskState.conversationHistoryDeletedRange = contextManagementMetadata.conversationHistoryDeletedRange
 			await this.messageStateHandler.saveClineMessagesAndUpdateHistory()
 			// saves task history item which we use to keep track of conversation history deleted range
 		}
 
 		// Response API requires native tool calls to be enabled
-		const stream = this.api.createMessage(systemPrompt, contextManagementMetadata.truncatedConversationHistory, tools)
+		let requestMessages = contextManagementMetadata?.truncatedConversationHistory ?? []
+		if (mycelium) {
+			const prepared = await mycelium.beforeRequest(this.messageStateHandler.getApiConversationHistory())
+			if (prepared.replaceStoredHistory) {
+				await this.messageStateHandler.overwriteApiConversationHistory(prepared.replaceStoredHistory)
+			}
+			for (const notice of prepared.notices) {
+				await this.say("info", `[Mycelium] ${notice}`)
+			}
+			requestMessages = prepared.messages
+		}
+		this.myceliumRequestStartedAt = Date.now()
+		const stream = this.api.createMessage(systemPrompt, requestMessages, tools)
 
 		const iterator = stream[Symbol.asyncIterator]()
 
@@ -3088,6 +3151,20 @@ export class Task {
 
 			// Update the api_req_started message with final usage and cost details
 			await finalizeApiReqMsg()
+			if (this.mycelium) {
+				await this.mycelium
+					.afterAgentCall({
+						usage: {
+							input: taskMetrics.inputTokens,
+							output: taskMetrics.outputTokens,
+							cacheRead: taskMetrics.cacheReadTokens,
+							cacheWrite: taskMetrics.cacheWriteTokens,
+							costUsd: taskMetrics.totalCost,
+						},
+						durationMs: Date.now() - this.myceliumRequestStartedAt,
+					})
+					.catch((error) => Logger.error("[Mycelium] failed to record the agent call:", error))
+			}
 			await this.messageStateHandler.saveClineMessagesAndUpdateHistory()
 			await this.postStateToWebview()
 

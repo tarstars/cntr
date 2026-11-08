@@ -1,7 +1,7 @@
+import { MULTI_ROOT_HINT } from "../../constants"
 import { PromptBuilder } from "../../registry/PromptBuilder"
 import { TemplateEngine } from "../../templates/TemplateEngine"
 import type { PromptVariant, SystemPromptContext } from "../../types"
-import { MULTI_ROOT_HINT } from "../../constants"
 
 export async function getToolUseToolsSection(variant: PromptVariant, context: SystemPromptContext): Promise<string> {
 	const focusChainEnabled = context.focusChainSettings?.enabled

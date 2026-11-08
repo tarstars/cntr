@@ -126,6 +126,10 @@ export interface SystemPromptContext {
 	readonly enableNativeToolCalls?: boolean
 	readonly enableParallelToolCalling?: boolean
 	readonly terminalExecutionMode?: "vscodeTerminal" | "backgroundExec"
+	/** Mycelium: hides tools the current stage does not allow. */
+	readonly toolFilter?: (toolId: string) => boolean
+	/** Mycelium: extra tool ids (myc_*) to offer in addition to the variant's own list. */
+	readonly extraToolIds?: readonly string[]
 }
 
 /**

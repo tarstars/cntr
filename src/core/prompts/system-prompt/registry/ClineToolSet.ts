@@ -86,7 +86,7 @@ export class ClineToolSet {
 
 	public static getEnabledTools(variant: PromptVariant, context: SystemPromptContext): ClineToolSet[] {
 		const resolved: ClineToolSet[] = []
-		const requestedIds = variant.tools ? [...variant.tools] : []
+		const requestedIds = [...(variant.tools ?? []), ...(context.extraToolIds ?? [])]
 		for (const id of requestedIds) {
 			const tool = ClineToolSet.getToolByNameWithFallback(id, variant.family)
 			if (tool) {
@@ -99,7 +99,9 @@ export class ClineToolSet {
 
 		// Filter by context requirements
 		const enabledTools = resolved.filter(
-			(tool) => !tool.config.contextRequirements || tool.config.contextRequirements(context),
+			(tool) =>
+				(!tool.config.contextRequirements || tool.config.contextRequirements(context)) &&
+				(!context.toolFilter || context.toolFilter(tool.config.id)),
 		)
 
 		return enabledTools
@@ -181,7 +183,8 @@ export class ClineToolSet {
 
 		// MCP tools
 		const mcpServers = context.mcpHub?.getServers()?.filter((s) => s.disabled !== true) || []
-		const mcpTools = mcpServers?.flatMap((server) => mcpToolToClineToolSpec(variant.family, server))
+		const mcpAllowed = !context.toolFilter || context.toolFilter(ClineDefaultTool.MCP_USE)
+		const mcpTools = mcpAllowed ? mcpServers?.flatMap((server) => mcpToolToClineToolSpec(variant.family, server)) : []
 
 		const enabledTools = [...toolConfigs, ...mcpTools].filter(
 			(tool) => typeof tool.description === "string" && tool.description.trim().length > 0,
