@@ -1,4 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
+
+import { registerMyceliumCommands } from "./hosts/vscode/mycelium/commands"
 import { MYCELIUM_SECRET_KEYS, VsCodeSecretSyncStorage } from "./mycelium/secrets/VsCodeSecretSyncStorage"
 // Import the module and reference it with the alias vscode in your code below
 
@@ -84,6 +86,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	// 4. Register services and perform common initialization
 	// IMPORTANT: Must be done after host provider is setup and migrations are complete
 	const webview = (await initialize(storageContext)) as VscodeWebviewProvider
+
+	// Mycelium: commands, status bar and Cockpit
+	registerMyceliumCommands(context)
 
 	// 5. Register services and commands specific to VS Code
 	// Initialize test mode and add disposables to context

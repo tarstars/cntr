@@ -1,4 +1,5 @@
 import { BrowserAction, BrowserActionResult, browserActions, ClineSayBrowserAction } from "@shared/ExtensionMessage"
+import { saveScreenshot } from "@/mycelium/screenshots"
 import { ClineDefaultTool } from "@/shared/tools"
 import { ToolUse } from "../../../assistant-message"
 import { formatResponse } from "../../../prompts/responses"
@@ -177,6 +178,12 @@ export class BrowserToolHandler implements IFullyManagedTool {
 						browserActionResult = await browserSession.closeBrowser()
 						break
 				}
+			}
+
+			// Mycelium: keep every screenshot for later visual comparison
+			const mycelium = config.getMycelium?.()
+			if (mycelium && browserActionResult?.screenshot) {
+				await saveScreenshot(mycelium.cwd, mycelium.taskId, browserActionResult.screenshot, action).catch(() => undefined)
 			}
 
 			// Handle results based on action type

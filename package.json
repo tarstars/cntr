@@ -245,6 +245,31 @@
 				"title": "Add to Cline Chat",
 				"category": "Cline",
 				"icon": "$(link-external)"
+			},
+			{
+				"command": "mycelium-coder.newTask",
+				"title": "Mycelium: New Task…",
+				"category": "Mycelium"
+			},
+			{
+				"command": "mycelium-coder.setProfile",
+				"title": "Mycelium: Set Workspace Profile…",
+				"category": "Mycelium"
+			},
+			{
+				"command": "mycelium-coder.openCockpit",
+				"title": "Mycelium: Open Cockpit",
+				"category": "Mycelium"
+			},
+			{
+				"command": "mycelium-coder.summarize",
+				"title": "Mycelium: Summarize Workspace",
+				"category": "Mycelium"
+			},
+			{
+				"command": "mycelium-coder.configureEliza",
+				"title": "Mycelium: Configure Eliza…",
+				"category": "Mycelium"
 			}
 		],
 		"keybindings": [
