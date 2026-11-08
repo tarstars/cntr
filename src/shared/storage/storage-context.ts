@@ -2,6 +2,7 @@ import fsSync from "node:fs"
 import path from "node:path"
 import { myceliumHome } from "../../mycelium/home"
 import { ClineFileStorage } from "./ClineFileStorage"
+import type { ClineSyncStorage } from "./ClineStorage"
 import { ClineMemento } from "./ClineStorage"
 
 /**
@@ -25,8 +26,11 @@ export interface StorageContext {
 	 */
 	readonly globalStateBackingStore: ClineFileStorage
 
-	/** Secrets — API keys and other sensitive values. File uses restricted permissions (0o600). */
-	readonly secrets: ClineFileStorage<string>
+	/**
+	 * Secrets — API keys and other sensitive values. In VS Code, Mycelium passes a store backed by
+	 * VS Code SecretStorage; other hosts fall back to a 0o600 file.
+	 */
+	readonly secrets: SecretStore
 
 	/** Workspace-scoped state — per-project toggles, rules, etc. */
 	readonly workspaceState: ClineFileStorage
@@ -38,7 +42,15 @@ export interface StorageContext {
 	readonly workspaceStoragePath: string
 }
 
+/** A synchronous secrets store that also supports batched writes (file- or SecretStorage-backed). */
+export type SecretStore = ClineSyncStorage<string> & {
+	setBatch(entries: Record<string, string | undefined>): Thenable<void>
+}
+
 export interface StorageContextOptions {
+	/** Secrets store to use instead of the default 0o600 file (Mycelium: VS Code SecretStorage). */
+	secrets?: SecretStore
+
 	/**
 	 * Override the Cline home directory. Defaults to CLINE_DIR env var or ~/.cline.
 	 */
@@ -116,9 +128,11 @@ export function createStorageContext(opts: StorageContextOptions = {}): StorageC
 	return {
 		globalState,
 		globalStateBackingStore: globalState,
-		secrets: new ClineFileStorage<string>(path.join(dataDir, "secrets.json"), "Secrets", {
-			fileMode: 0o600, // Owner read/write only — protects API keys
-		}),
+		secrets:
+			opts.secrets ??
+			new ClineFileStorage<string>(path.join(dataDir, "secrets.json"), "Secrets", {
+				fileMode: 0o600, // Owner read/write only — protects API keys
+			}),
 		workspaceState: new ClineFileStorage(path.join(workspaceDir, "workspaceState.json"), "WorkspaceState"),
 		dataDir,
 		workspaceStoragePath: workspaceDir,

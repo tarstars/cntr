@@ -1,4 +1,5 @@
 // The module 'vscode' contains the VS Code extensibility API
+import { MYCELIUM_SECRET_KEYS, VsCodeSecretSyncStorage } from "./mycelium/secrets/VsCodeSecretSyncStorage"
 // Import the module and reference it with the alias vscode in your code below
 
 import assert from "node:assert"
@@ -75,7 +76,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	// 3. One-time export of VSCode's native storage to shared file-backed stores.
 	// After this, all platforms (VSCode, CLI, JetBrains) read from ~/.cline/data/.
 	const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-	const storageContext = createStorageContext({ workspacePath })
+	// Mycelium: secrets live in VS Code SecretStorage (OS keychain), not in a plaintext file.
+	const secrets = await VsCodeSecretSyncStorage.load(context.secrets, MYCELIUM_SECRET_KEYS)
+	const storageContext = createStorageContext({ workspacePath, secrets })
 	await exportVSCodeStorageToSharedFiles(context, storageContext)
 
 	// 4. Register services and perform common initialization

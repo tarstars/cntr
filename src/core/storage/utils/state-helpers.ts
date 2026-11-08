@@ -14,6 +14,7 @@ import {
 } from "@shared/storage/state-keys"
 import { Logger } from "@/shared/services/Logger"
 import { ClineMemento } from "@/shared/storage"
+import type { ClineSyncStorage } from "@/shared/storage/ClineStorage"
 import { readTaskHistoryFromState } from "../disk"
 import { StateManager } from "../StateManager"
 
@@ -22,7 +23,7 @@ import { StateManager } from "../StateManager"
 /**
  * Read secrets from a ClineFileStorage instance.
  */
-export function readSecretsFromStorage(store: ClineFileStorage<string>): Secrets {
+export function readSecretsFromStorage(store: ClineSyncStorage<string>): Secrets {
 	return SecretKeys.reduce((acc, key) => {
 		acc[key] = store.get(key)
 		return acc
